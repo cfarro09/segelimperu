@@ -1,0 +1,58 @@
+td.field:hover,td.null:hover,td.type:hover, td.comment:hover, td.fk:hover, td.status:hover {
+    cursor: pointer;
+}
+i.mdi, i.fa{
+	font-size: 24px;
+	vertical-align: middle;
+	text-align: center;
+	cursor: pointer;
+}
+.mdi:hover, .fa:hover{
+	transition: 0.3s;
+	color: #4ABDA4;
+	font-size: 25px;
+}
+#columns_table label{
+	line-height: 38px;
+	vertical-align: middle;
+	text-align: left;
+}
+.shadow_red input{
+	border: 1px solid red;
+}
+label.custom-control-label{
+	line-height: 20px!important;
+}
+.tr_selected{
+	background-color: #e6e6e6;
+}
+.action{
+	font-size: 20px;
+	color: #747474;
+}
+.aliastable input{
+	border: none;
+	padding-left: 0;
+	color: #797979;
+}
+.save_alias i{
+	/*color: #4ABDA4;*/
+}
+@media only screen and (min1-width: 600px) {
+  	#columns_table label{
+		text-align: right;
+	}
+	.table{
+		display: block;
+	    width: 100%;
+	    overflow-x: auto;
+	    -webkit-overflow-scrolling: touch;
+	}
+}
+.Vencido{
+	background: #FF6666;
+	color: white;
+}
+.Pronto{
+	background: #FFF083;
+}

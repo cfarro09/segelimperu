@@ -1,0 +1,33 @@
+#loading-circle-overlay {
+  min-height: 100vh;
+  display: none;
+  position: fixed;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.loader {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader img {
+  width: 110px;
+}
+label.error, .error-validate{
+  color: black;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 0;
+}
+button.gradient{
+      background-image: linear-gradient(to right, #4C60E3, #1E3544);
+}
+button.gradient_reg{
+      background-image: linear-gradient(to right, #1E3544, #4C60E3);
+}
