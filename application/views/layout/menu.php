@@ -86,9 +86,9 @@
         </a>
         <ul class="nav-second-level" aria-expanded=false>
           <?php if ($this->session->userdata('tipo_usu') && ($this->session->userdata('tipo_usu') == "SA" || $this->session->userdata('tipo_usu') == "AD")) : ?>
-            <li><a href="<?= site_url() ?>VoletasUnif/register">Registrar Boleta</a></li>
+            <li><a href="<?= site_url() ?>BoletasUnif/register">Registrar Boleta</a></li>
           <?php endif ?>
-          <li><a href="<?= site_url() ?>VoletasUnif/listar">Listar Boletas</a></li>
+          <li><a href="<?= site_url() ?>BoletasUnif/listar">Listar Boletas</a></li>
         </ul>
       </li>
       <li id="Personal">
