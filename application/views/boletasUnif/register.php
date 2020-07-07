@@ -27,12 +27,14 @@
 									<option value="fotocheck">Dotocheck</option>
 									<option value="tocasdetela">Tocas de tela</option>
 									<option value="mandil">Mandil</option>
+									<option value="trajeprotector">Traje Protector</option>
 									<option value="botasdejebe">Botas de jebe</option>
 									<option value="lentes">Lentes</option>
 									<option value="zapatilla">Zapatilla</option>
 									<option value="botines">Botines</option>
 									<option value="casco">casco</option>
 									<option value="mascarilla">Mascarilla</option>
+									<option value="protectorfacial">Protector Facial</option>
 									<option value="guantes">Guantes</option>
 									<option value="tapaoidos">Tapa Oidos</option>
 									<option value="poncho_inpermeable">Poncho inpermeable</option>
