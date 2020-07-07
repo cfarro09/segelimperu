@@ -37,6 +37,7 @@ class BoletasUnif_model extends CI_Model{
 	}
 	function get_personal_with_vol_unif() {
 		$this->db->select("*");
+		$this->db->order_by("id", "desc");
 		$query = $this->db->get("user_vol_unif");
 		return ($query->num_rows() >= 1) ? $query->result() : false;
 	}

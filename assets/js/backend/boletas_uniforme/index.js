@@ -171,6 +171,7 @@ $(document).ready(function() {
 	if ($('#datatable').length > 0) {
 		var table = $('#datatable').DataTable({
 			lengthChange: false,
+			"ordering": false,
 			buttons: [ 'excel', 'pdf', 'colvis'],
 			"scrollX": true,
 			"order": [[ 0, "desc" ]],
