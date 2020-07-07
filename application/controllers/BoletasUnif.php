@@ -146,7 +146,7 @@ class BoletasUnif extends CI_Controller
 			$w = array(40, 30, 15, 15, 20, 15, 20, 40);
 			if ($boletas) {
 				foreach ($boletas as $boleta) {
-					$this->fpdf->SetFont('Arial', 'B', 8);
+					$this->fpdf->SetFont('Arial', 'B', 10);
 					$this->fpdf->Cell(0, 15, "NRO BOLETA: $boleta->nro_boleta", 0, 0, 'C');
 					$this->fpdf->Ln();
 					$this->fpdf->SetFillColor(255, 0, 0);
@@ -155,13 +155,13 @@ class BoletasUnif extends CI_Controller
 					$this->fpdf->SetLineWidth(.3);
 					$this->fpdf->SetFont('', 'B');
 					// Cabecera
+					$this->fpdf->SetFont('Arial', 'B', 8);
 					for ($i = 0; $i < count($header); $i++)
 						$this->fpdf->Cell($w[$i], 7, $header[$i], 1, 0, 'C', true);
 					$this->fpdf->Ln();
 					// Restauracion de colores y fuentes
 					$this->fpdf->SetFillColor(224, 235, 255);
 					$this->fpdf->SetTextColor(0);
-					$this->fpdf->SetFont('');
 					$detalleBoleta = $this->General_model->get_data_id_dynamic('detalle_vol_unif', array('nro_boleta' => $boleta->nro_boleta));
 					if ($detalleBoleta) {
 						foreach ($detalleBoleta as $row) {
@@ -176,10 +176,15 @@ class BoletasUnif extends CI_Controller
 							$this->fpdf->Ln();
 							$fill = !$fill;
 						}
+						$this->fpdf->Cell(array_sum($w), 0, '', 'T');
 					}
+					$this->fpdf->Ln();
+					$this->fpdf->SetFont('Arial', 'B', 8);
+					$this->fpdf->Multicell(0, 5, $boleta->observacion, 0,'L', false);
+					$this->fpdf->Ln();
 				}
 			}
-			$this->fpdf->Cell(array_sum($w), 0, '', 'T');
+			
 			$this->fpdf->Output(utf8_decode($name_pdf . ".pdf"), 'D');
 		} else {
 			redirect('boletasUnif/listar', 'refresh');
