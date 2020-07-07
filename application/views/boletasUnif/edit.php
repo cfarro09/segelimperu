@@ -16,7 +16,11 @@
 								<select class="form-control input_detail" name="detalle" id="detalle" required>
 									<option disabled selected value="">Select</option>
 									<option value="camisa">Camisa</option>
+									<option value="camisa_mangalarga">Camisa Mangalarga</option>
+									<option value="camisa_mangacorta">Camisa Mangacorta</option>
 									<option value="polo">Polo</option>
+									<option value="polo_mangalarga">Polo Mangalarga</option>
+									<option value="polo_mangacorta">Polo Mangacorta</option>
 									<option value="pantalon">Pantalon</option>
 									<option value="gorro">Gorro</option>
 									<option value="chaleco">Chaleco</option>
@@ -64,6 +68,22 @@
 									<option value="nuevo">Nuevo</option>
 									<option value="usado">Usado</option>
 								</select>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="" class="control-label">Posesión</label>
+								<select class="form-control input_detail" name="posesion" id="posesion" required>
+									<option disabled selected value="">Seleccionar</option>
+									<option value="trabajador">Trabajador</option>
+									<option value="segelim">Segelim</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="" class="control-label">Comentario</label>
+								<textarea class="form-control" name="comentario" id="comentario" cols="30" rows="3"></textarea>
 							</div>
 						</div>
 					</div>
@@ -168,6 +188,8 @@
 													<td class="input_detail_row talla"><?= $value->talla ?></td>
 													<td class="input_detail_row cantidad"><?= $value->cantidad ?></td>
 													<td class="input_detail_row estado"><?= $value->estado ?></td>
+													<td class="input_detail_row posesion d-none"><?= $value->posesion ?></td>
+													<td class="input_detail_row comentario d-none"><?= $value->comentario ?></td>
 													<td class="text-center">
 														<a href="#" class="edit_row"><i class="fa fa-edit mr-2" style="font-size: 25px"></i></a>
 														<a href="#" data-id_detalle="<?= $value->id_detalle ?>" class="delete_row"><i class="fa fa-trash" style="font-size: 25px"></i></a>

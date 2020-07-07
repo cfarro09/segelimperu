@@ -72,10 +72,14 @@ class General_model extends CI_Model{
         }
         return $response;
     }
-    function get_data_id_dynamic($name_table, $where){
+    function get_data_id_dynamic($name_table, $where, $order = false){
         $this->db->select('*');
         $this->db->where($where);
+        if ($order)
+            $this->db->order_by($order[0], $order[1]);
+
         $query = $this->db->get($name_table);
+        
         return ($query->num_rows() >= 1) ? $query->result() : false;
     }
     function edit_dynamic($name_table, $where, $data){

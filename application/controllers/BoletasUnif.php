@@ -106,9 +106,9 @@ class BoletasUnif extends CI_Controller {
 	}
 	 public function pdf_resumen($dni = false){
 	 	if ($dni) {
-			$boletas = $this->General_model->get_data_id_dynamic('user_vol_unif', array('dni' => $dni));
+			$boletas = $this->General_model->get_data_id_dynamic('user_vol_unif', array('dni' => $dni), array("id", "desc"));
 			$boleta = $boletas[0];
-			$detalles_total =  $this->BoletasUnif_model->get_detalle_vol_by_dni($dni);
+			
 			$full_name = $boleta->apellido_pat." ".$boleta->apellido_mat." ".$boleta->nombres;
 			$full_name = iconv('UTF-8', 'windows-1252', $full_name);
 			$name_pdf = "resumen_$boleta->dni";

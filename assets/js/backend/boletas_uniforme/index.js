@@ -98,7 +98,13 @@ $(document).ready(function() {
 		$('#estado').val($(this).closest('tr').find('.estado').text());
 		$('#color').val($(this).closest('tr').find('.color').text());
 		$('#cantidad').val($(this).closest('tr').find('.cantidad').text());
+		
 		$('#talla').val($(this).closest('tr').find('.talla').text());
+		debugger
+		$('#posesion').val($(this).closest('tr').find('.posesion').text());
+		$('#comentario').val($(this).closest('tr').find('.comentario').text());
+
+
 		$('#index_to').val($(this).closest('tr').data('index'));
 		$('#btn_submit').text('MODIFICAR');
 	})

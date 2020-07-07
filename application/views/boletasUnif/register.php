@@ -15,22 +15,26 @@
 								<select class="form-control input_detail" name="detalle" id="detalle" required>
 									<option disabled selected value="">Select</option>
 									<option value="camisa">Camisa</option>
+									<option value="camisa_mangalarga">Camisa Mangalarga</option>
+									<option value="camisa_mangacorta">Camisa Mangacorta</option>
 									<option value="polo">Polo</option>
+									<option value="polo_mangalarga">Polo Mangalarga</option>
+									<option value="polo_mangacorta">Polo Mangacorta</option>
 									<option value="pantalon">Pantalon</option>
 									<option value="gorro">Gorro</option>
 									<option value="chaleco">Chaleco</option>
 									<option value="casaca">Casaca</option>
-									<option value="fotocheck">Fotocheck</option>
-									<option value="tocasdetela">Tocas de Tela</option>
+									<option value="fotocheck">Dotocheck</option>
+									<option value="tocasdetela">Tocas de tela</option>
 									<option value="mandil">Mandil</option>
-									<option value="botasdejebe">Botas de Jebe</option>
+									<option value="botasdejebe">Botas de jebe</option>
 									<option value="lentes">Lentes</option>
 									<option value="zapatilla">Zapatilla</option>
 									<option value="botines">Botines</option>
-									<option value="casco">Casco</option>
+									<option value="casco">casco</option>
 									<option value="mascarilla">Mascarilla</option>
 									<option value="guantes">Guantes</option>
-									<option value="tapaoidos">Tapa oidos</option>
+									<option value="tapaoidos">Tapa Oidos</option>
 									<option value="poncho_inpermeable">Poncho inpermeable</option>
 								</select>
 							</div>
