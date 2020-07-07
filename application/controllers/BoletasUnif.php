@@ -30,8 +30,7 @@ class BoletasUnif extends CI_Controller
 		$data['list_boletas'] = $this->BoletasUnif_model->get_personal_with_vol_unif();
 		$this->layout->view('boletasUnif/list', $data);
 	}
-	public function register_boleta()
-	{
+    public function register_boleta(){
 		$idpers = html_purify($this->input->post('idpers'));
 		$fecha = html_purify($this->input->post('fecha'));
 		$apellido_pat = html_purify($this->input->post('apellido_pat'));
@@ -40,21 +39,17 @@ class BoletasUnif extends CI_Controller
 		$dni = html_purify($this->input->post('dni'));
 		$nro_boleta = html_purify($this->input->post('nro_boleta'));
 		$observacion = html_purify($this->input->post('observacion'));
-		$posesion = html_purify($this->input->post('posesion'));
-		$comentario = html_purify($this->input->post('comentario'));
 		$detalle_boleta = html_purify($this->input->post('data_extra'));
 
-		if ($apellido_pat && $apellido_mat && $nombres && $dni && $fecha && $nro_boleta) {
+		if (($apellido_pat && $apellido_mat && $nombres && $dni && $fecha && $nro_boleta)   || ($apellido_pat == "ANULADO" || $dni == 0)) {
 			$send_boleta = array(
-				'fecha' => $fecha,
+				'fecha' => $fecha, 
 				'nro_boleta' => (int) $nro_boleta,
 				'nombres' => $nombres,
 				'apellido_mat' => $apellido_mat,
 				'apellido_pat' => $apellido_pat,
-				'dni' => $dni,
-				'observacion' => $observacion,
-				'posesion' => $posesion,
-				'comentario' => $comentario,
+				'dni' => $dni == "0" ? "ANULADO" : $dni,
+				'observacion' => $observacion
 			);
 			$response =  $this->BoletasUnif_model->register_boleta($send_boleta);
 			if ($detalle_boleta) {
@@ -62,13 +57,13 @@ class BoletasUnif extends CI_Controller
 					$detalle_boleta = json_decode($detalle_boleta);
 					$response_1 =  $this->BoletasUnif_model->register_detalle_boleta($detalle_boleta);
 					echo json_encode($response_1);
-				} else {
+				}else{
 					echo json_encode("false");
 				}
-			} else {
+			}else{
 				echo json_encode($response);
 			}
-		} else {
+		}else{
 			echo json_encode("false");
 		}
 	}

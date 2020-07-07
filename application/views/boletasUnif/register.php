@@ -134,7 +134,7 @@
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<div class="form-group">
 									<label for="" class="control-label">Estado Boleta</label>
-									<select class="form-control" id="estado_boleta" required>
+									<select class="form-control"  id="estado_boleta" required>
 										<option value="activo" selected>ACTIVO</option>
 										<option value="anulado">ANULADO</option>
 									</select>
