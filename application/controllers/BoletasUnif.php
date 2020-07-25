@@ -139,15 +139,17 @@ class BoletasUnif extends CI_Controller
 			$this->fpdf->Cell(30, 6, "DNI: ", 0, 0, 'L');
 			$this->fpdf->Cell(30, 6, $boleta->dni, 0, 0, 'L');
 			$this->fpdf->Ln();
-			$header = ['DETALLE', 'COLOR', 'TALLA', 'CANT', 'ESTADO', 'N BOL', 'POSESION', 'COMENTARIO'];
+			$header = ['DETALLE', 'COLOR', 'TALLA', 'CANT', 'ESTADO', 'POSESION', 'COMENTARIO'];
 			// Datos
 			$fill = false;
 			$pre_vol = false;
-			$w = array(40, 30, 15, 15, 20, 15, 20, 40);
+			$w = array(50, 30, 15, 15, 20, 25, 40);
 			if ($boletas) {
 				foreach ($boletas as $boleta) {
+					$fechaformated = date("d/m/Y", strtotime($boleta->fecha)); 
 					$this->fpdf->SetFont('Arial', 'B', 10);
 					$this->fpdf->Cell(0, 15, "NRO BOLETA: $boleta->nro_boleta", 0, 0, 'C');
+					$this->fpdf->Cell(0, 15, $fechaformated, 0, 0, 'R');
 					$this->fpdf->Ln();
 					$this->fpdf->SetFillColor(255, 0, 0);
 					$this->fpdf->SetTextColor(255);
@@ -170,9 +172,8 @@ class BoletasUnif extends CI_Controller
 							$this->fpdf->Cell($w[2], 6, strtoupper($row->talla), 'LR', 0, 'C', $fill);
 							$this->fpdf->Cell($w[3], 6, number_format($row->cantidad), 'LR', 0, 'C', $fill);
 							$this->fpdf->Cell($w[4], 6, strtoupper($row->estado), 'LR', 0, 'C', $fill);
-							$this->fpdf->Cell($w[5], 6, $row->nro_boleta, 'LR', 0, 'C', $fill);
-							$this->fpdf->Cell($w[6], 6, strtoupper($row->posesion), 'LR', 0, 'C', $fill);
-							$this->fpdf->Cell($w[7], 6, $row->comentario, 'LR', 0, 'C', $fill);
+							$this->fpdf->Cell($w[5], 6, strtoupper($row->posesion), 'LR', 0, 'C', $fill);
+							$this->fpdf->Cell($w[6], 6, $row->comentario, 'LR', 0, 'C', $fill);
 							$this->fpdf->Ln();
 							$fill = !$fill;
 						}

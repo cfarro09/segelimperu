@@ -12,6 +12,7 @@ class Contratos_model extends CI_Model{
         $this->db->where('c.end_cont = (select max(end_cont) from Contratos where idpers=p.idpers)'); 
         $this->db->group_by('p.idpers'); 
         $query = $this->db->get("Personal p");
+        var_dump($query->num_rows());die;
         return ($query->num_rows() >= 1) ? $query->result() : false;
     }
     function get_history_empl($idpers) {

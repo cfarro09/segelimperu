@@ -89,7 +89,7 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal">Cerrar</button>
 					<button type="submit" id="btn_submit" class="btn btn-info waves-effect waves-light">AGREGAR</button>
 				</div>
 			</form>
@@ -176,6 +176,7 @@
 											<th class="text-center">Talla</th>
 											<th class="text-center">Cantidad</th>
 											<th class="text-center">Estado</th>
+											<th class="text-center">Posesion</th>
 											<th class="text-center">Acciones</th>
 										</tr>
 									</thead>
@@ -183,12 +184,12 @@
 										<?php if ($detalle_boleta): ?>
 											<?php foreach ($detalle_boleta as $value): ?>
 												<tr id="tr_<?= $value->id_detalle ?>" data-index="<?= $value->id_detalle ?>">
-													<td class="input_detail_row detalle"><?= $value->detalle ?></td>
+													<td class="input_detail_row detalle"><?= str_replace("_", " ", $value->detalle) ?></td>
 													<td class="input_detail_row color"><?= $value->color ?></td>
 													<td class="input_detail_row talla"><?= $value->talla ?></td>
 													<td class="input_detail_row cantidad"><?= $value->cantidad ?></td>
 													<td class="input_detail_row estado"><?= $value->estado ?></td>
-													<td class="input_detail_row posesion d-none"><?= $value->posesion ?></td>
+													<td class="input_detail_row posesion"><?= $value->posesion ?></td>
 													<td class="input_detail_row comentario d-none"><?= $value->comentario ?></td>
 													<td class="text-center">
 														<a href="#" class="edit_row"><i class="fa fa-edit mr-2" style="font-size: 25px"></i></a>

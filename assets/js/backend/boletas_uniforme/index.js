@@ -146,6 +146,7 @@ $(document).ready(function() {
 					data[index]['nro_boleta'] = $('#nro_boleta').val()
 					index++;
 				})
+				debugger
 				to_send = $('#form_insert_boleta').serialize()+"&data_extra="+JSON.stringify(data);
 			}
 			fetch_post(`${site_url}/BoletasUnif/register_boleta`, to_send).then(res => {

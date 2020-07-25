@@ -83,7 +83,7 @@
 						<div class="col-md-12">
 							<div class="form-group">
 								<label for="" class="control-label">Comentario</label>
-								<textarea class="form-control" name="comentario" id="comentario" cols="30" rows="3"></textarea>
+								<textarea class="form-control input_detail" name="comentario" id="comentario" cols="30" rows="3"></textarea>
 							</div>
 						</div>
 					</div>
@@ -188,6 +188,7 @@
 											<th class="">Talla</th>
 											<th class="">Cantidad</th>
 											<th class="">Estado</th>
+											<th class="">Posesion</th>
 											<th class="text-center">Acciones</th>
 										</tr>
 									</thead>
