@@ -899,8 +899,6 @@
 			data['<?= $key ?>'] = '<?= $value ?>'
 			if (getSelector('#<?= $key ?>'))
 				getSelector('#<?= $key ?>').value = '<?= $value ?>';
-			else
-				console.log(`<?= var_dump($key) ?>`)
 		<?php endforeach ?>
         
 		rutafoto.parentElement.querySelector(".imagex").src = data.rutafoto;
