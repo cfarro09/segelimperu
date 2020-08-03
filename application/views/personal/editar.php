@@ -863,10 +863,10 @@
 			ii.value = ""
 		});
 		getSelectorAll(".empresa1").forEach(ii => {
-			ii.value = ""
+			// ii.value = ""
 		});
 		getSelectorAll(".empresa2").forEach(ii => {
-			ii.value = ""
+			// ii.value = ""
 		});
 	}
 	const mostrarmodalhijos = () => {
