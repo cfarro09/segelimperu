@@ -37,8 +37,6 @@ class Reporte_personal extends FPDF{
 
 	function centerImage($img)
 	{
-		$img = str_replace("https://www.segelimperu.delycomps.com", "https://www.birlay.com/segelimperu", $img);
-		
 		list($width, $height) = $this->resizeToFit($img);
 		// you will probably want to swap the width/height
 		// around depending on the page's orientation
@@ -109,8 +107,7 @@ class Reporte_personal extends FPDF{
 	    $this->Cell(85,9,utf8_decode($nombres),1,2);
 	    // $this->Image('assets/images/reporte_foto_perfil.png',$imgX+140,$imgY-9,30);
 	    if(!empty($url_foto)){
-			$url_foto = str_replace("https://www.segelimperu.delycomps.com", "https://www.birlay.com/segelimperu", $url_foto);
-			// $this->Image($url_foto,$imgX+137,$imgY-9,33,44);
+			$this->Image($url_foto,$imgX+137,$imgY-9,33,44);
 		}
 	    $this->Ln(8);
 	    $this->setX(25);
@@ -446,7 +443,6 @@ class Reporte_personal extends FPDF{
 		$y = $this->GetY();
 		// $this->Image('assets/images/reporte_foto_direccion.png',$x,$y,170);
 		if(!empty($url_foto_direccion)){
-			$url_foto_direccion = str_replace("https://www.segelimperu.delycomps.com", "https://www.birlay.com/segelimperu", $url_foto_direccion);
 			$this->Image($url_foto_direccion,$x+6,$y,158,53);
 		}
 	}
@@ -491,8 +487,6 @@ class Reporte_personal extends FPDF{
 		$this->Ln(60);
 		$this->SetFont('Arial',null,10);
 		if(!empty($url_foto_firma)){
-			$url_foto_firma = str_replace("https://www.segelimperu.delycomps.com", "https://www.birlay.com/segelimperu", $url_foto_firma);
-
 			$this->Image($url_foto_firma,$x+28,$y+18,120,48);
 		}
 		// $this->Cell(0,6,'FIRMA Y HUELLA DACTILAR',0,0,'C');
