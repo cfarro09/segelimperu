@@ -28,6 +28,7 @@
 									<option value="fotocheck">Dotocheck</option>
 									<option value="tocasdetela">Tocas de tela</option>
 									<option value="mandil">Mandil</option>
+									<option value="trajeprotector">Traje Protector</option>
 									<option value="botasdejebe">Botas de jebe</option>
 									<option value="lentes">Lentes</option>
 									<option value="zapatilla">Zapatilla</option>
