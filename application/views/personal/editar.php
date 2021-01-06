@@ -896,9 +896,9 @@
 		document.querySelector("#form_hijos").addEventListener("submit", guardarhijo);
 		const data = {};
 		<?php foreach ($r as $key => $value) : ?>
-			data['<?= $key ?>'] = '<?= str_replace("'", "", $value) ?>';
+			data['<?= $key ?>'] = `<?= str_replace("'", "", $value) ?>`;
 			if (getSelector('#<?= $key ?>'))
-				getSelector('#<?= $key ?>').value = '<?= str_replace("'", "", $value) ?>';
+				getSelector('#<?= $key ?>').value = `<?= str_replace("'", "", $value) ?>`;
 		<?php endforeach ?>
         
 		rutafoto.parentElement.querySelector(".imagex").src = data.rutafoto;
