@@ -20,9 +20,15 @@ class Recibo extends CI_Controller
 	{
 		$data['menu_tables'] =  $this->General_model->get_tables_active();
 
-		$data['list_recibos'] = $this->General_model->get_data_dynamic("receipt", "*");
+		//$data['list_recibos'] = $this->General_model->get_data_dynamic("receipt", "*");
 
 		$this->layout->view('recibo/list', $data);
+	}
+
+	public function getData()
+	{
+		$data = $this->General_model->get_data_dynamic("receipt", "*");
+		die(json_encode(array("data" => $data)));
 	}
 
 	public function insertar()

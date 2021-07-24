@@ -68,7 +68,7 @@ type="text/css" />
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary waves-effect" data-dismiss="modal">Cerrar</button>
-					<button type="submit" id="btn_submit" class="btn btn-info waves-effect waves-light">AGREGAR</button>
+					<button type="submit" id="btn_submit" class="btn btn-info waves-effect waves-light">GUARDAR</button>
 				</div>
 			</form>
 		</div>
@@ -95,8 +95,8 @@ type="text/css" />
 			<div class="col-md-12 col-xs-12">
 				<button class="btn btn-success" onclick="registrarrecibo()">Agregar recibo</button>
 				<div class="card-box">
-					<table id="datatable" class="table" cellspacing="0" width="100%">
-						<thead class="thead-light">
+					<table id="datatableaux" class="table" cellspacing="0" width="100%">
+					<thead class="thead-light">
 							<tr>
 								<th>ID</th>
 								<th>Cliente</th>
@@ -108,27 +108,6 @@ type="text/css" />
 								<th class="text-center">Acciones</th>
 							</tr>
 						</thead>
-						<tbody>
-							<?php if ($list_recibos): ?>
-								<?php foreach ($list_recibos as $recibo): ?>
-									<tr class="">
-										<td class="receipt_id"><?= $recibo->receipt_id ?></td>
-										<td class="client"><?= $recibo->client ?></td>
-										<td class="price"><?= $recibo->price ?></td>
-										<td class="concept"><?= $recibo->concept ?></td>
-										<td class="made_in"><?= $recibo->made_in ?></td>
-										<td class="certificate_number"><?= $recibo->certificate_number ?></td>
-										<td class="date_receipt"><?= $recibo->date_receipt ?></td>
-										<td class="text-center">
-											<a href="<?= site_url() ?>personal/editar/<?= $recibo->receipt_id ?>"><i class="action fa fa-edit "></i></a>
-											<a href="#" onclick="delete_reg(<?= $recibo->receipt_id ?>, 'idPersonal', 'Personal', 'Personal')" class="action fa fa-trash pl-1 remove_list"></i></a>
-											<a href="<?= site_url() ?>recubo/reporte/<?= $recibo->receipt_id ?>" class="action fa fa-file-pdf-o pl-1"></i></a>
-											
-										</td>
-									</tr>
-								<?php endforeach ?>
-							<?php endif ?>
-						</tbody>
 					</table>
 				</div>
 			</div>
@@ -150,6 +129,7 @@ type="text/css" />
 <script src="<?= base_url()?>assets/js/backend/toast_alert.js?v=<?=$this->config->item("curr_ver");?>"></script>
 <script src="<?= base_url()?>assets/js/backend/boletas_uniforme/index.js?v=<?=$this->config->item("curr_ver");?>"></script>
 
+<script src="<?=base_url()?>assets/js/backend/form/list_form.js?v=<?=$this->config->item("curr_ver");?>"></script>
 <script>
 	$('.datepicker-autoclose').datepicker({
 		autoclose: true,
@@ -157,20 +137,60 @@ type="text/css" />
 	});
 
 	function registrarrecibo () {
+		form_recibo.reset();
 		receipt_id.value = "0"
 		$("#modal_operation").modal();
 	}
+	function editrecibo (obj, id) {
+		receipt_id.value = id;
 
+		client.value = $(obj).parent().parent().find(".client").text();
+		price.value = $(obj).parent().parent().find(".price").text(); 
+		certificate_number.value = $(obj).parent().parent().find(".certificate_number").text();
+		concept.value = $(obj).parent().parent().find(".concept").text();
+		made_in.value = $(obj).parent().parent().find(".made_in").text();
+		date_receipt.value = $(obj).parent().parent().find(".date_receipt").text();
+		$("#modal_operation").modal();
+	}
 	document.getElementById("form_recibo").onsubmit = function (e) {
 		e.preventDefault();
-
 		fetch_post("<?= base_url() ?>recibo/insertar", $("#form_recibo").serialize()).then(r => {
-			console.log(r);
-			if (r.success)
-				location.reload()
+			if (r.success) {
+				form_recibo.reset();
+				$("#modal_operation").modal("hide")
+				$("#datatableaux").DataTable().ajax.reload();
+			}
 			else
 				toast_error('¡Oh, hubo un error!', data.msg);
 
 		})
+	}
+	window.onload = () => {
+		$('#datatableaux').DataTable( {
+			"processing": true,
+			"ajax": {
+				"url": "<?= base_url() ?>recibo/getData",
+				"type": "POST"
+			},
+			"columns": [
+				{ className:"receipt_id", data: "receipt_id" },
+				{ className:"client", data: "client" },
+				{ className:"price", data: "price" },
+				{ className:"concept", data: "concept" },
+				{ className:"made_in", data: "made_in" },
+				{ className:"certificate_number", data: "certificate_number" },
+				{ className:"date_receipt", data: "date_receipt" },
+
+				{ 
+					data: "receipt_id",
+					sortalbe: false,
+					render: function( data, type, full, meta ) {
+						return `<a href="#" onclick="editrecibo(this, ${full.receipt_id})"><i class="action fa fa-edit "></i></a>
+						<a href="#" onclick="delete_reg(${full.receipt_id}, 'receipt_id', 'receipt', 'Recibo')" class="action fa fa-trash pl-1 remove_list"></i></a>
+						<a href="<?= site_url() ?>recibo/reporte/${full.receipt_id}" class="action fa fa-file-pdf-o pl-1"></i></a>`
+					}
+				},
+			]
+		} );
 	}
 </script>
