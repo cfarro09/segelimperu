@@ -80,11 +80,9 @@
           <i class="mdi mdi-account-card-details"></i><span>Contratos</span>
         </a>
       </li>
-      <li>
-        <a href="<?= site_url() ?>recibo/listar">
-          <i class="mdi mdi-account-card-details"></i><span>Recibos</span>
-        </a>
-      </li>
+      <?php if ($this->session->userdata('tipo_usu') && ($this->session->userdata('tipo_usu') == "SA" || $this->session->userdata('tipo_usu') == "AD")) : ?>
+        <li><a href="<?= site_url() ?>recibo/listar"><i class="mdi mdi-account-card-details"></i><span>Recibos</span></a></li>
+      <?php endif ?>
       <li>
         <a href="javascript: void(0);">
           <i class="mdi mdi-account-card-details"></i><span>Boletas Uniforme</span>
