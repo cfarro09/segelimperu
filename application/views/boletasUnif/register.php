@@ -38,6 +38,7 @@
 									<option value="guantes">Guantes</option>
 									<option value="tapaoidos">Tapa Oidos</option>
 									<option value="poncho_inpermeable">Poncho inpermeable</option>
+									<option value="canguro">Canguro</option>
 								</select>
 							</div>
 						</div>

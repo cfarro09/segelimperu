@@ -666,6 +666,7 @@
 									<option value="PTP">PTP</option>
 									<option value="CEDULAIDENTIDIDAD">CEDULA DE IDENTIDAD</option>
 									<option value="PASAPORTE">PASAPORTE</option>
+									<option value="OTROS">OTROS</option>
 								</select>
 							</div>
 							<div id="div_nrodocumento" class="col-lg-6 col-xs-12 mb-2">
