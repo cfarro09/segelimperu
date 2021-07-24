@@ -3,7 +3,7 @@
 <link href="<?= base_url(); ?>assets/plugins/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" 
 type="text/css" />
 <link href="<?= base_url(); ?>assets/plugins/datatables/buttons.bootstrap4.min.css" rel="stylesheet" type="text/css" />
-
+<link href="<?= base_url(); ?>assets/plugins/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css" />
 
 <div id="modal_operation" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
 	<div class="modal-dialog">
@@ -92,11 +92,21 @@ type="text/css" />
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-md-12 col-xs-12">
+			<div class="col-sm-2" style="display: flex; align-items: center">
 				<button class="btn btn-success" onclick="registrarrecibo()">Agregar recibo</button>
+			</div>
+			<div class="col-sm-4">
+				<div class="form-group	">
+					<label>Filtrar fecha de recibo</label>
+					<input class="form-control input-daterange-datepicker" id="fecharecibo" type="text" name="daterange" />
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12 col-xs-12">
 				<div class="card-box">
 					<table id="datatableaux" class="table" cellspacing="0" width="100%">
-					<thead class="thead-light">
+						<thead class="thead-light">
 							<tr>
 								<th>ID</th>
 								<th>Cliente</th>
@@ -108,6 +118,13 @@ type="text/css" />
 								<th class="text-center">Acciones</th>
 							</tr>
 						</thead>
+						<tbody></tbody>
+						<tfoot>
+							<tr>
+								<th colspan="7">Total</th>
+								<th id="total_order"></th>
+							</tr>
+						</tfoot>
 					</table>
 				</div>
 			</div>
@@ -125,12 +142,17 @@ type="text/css" />
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.html5.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.print.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.colVis.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.20/dataRender/datetime.js"></script>
+
+<script src="<?= base_url() ?>assets/plugins/moment/moment.js"></script>
+<script src="<?= base_url() ?>assets/plugins/bootstrap-daterangepicker/daterangepicker.js"></script>
 
 <script src="<?= base_url()?>assets/js/backend/toast_alert.js?v=<?=$this->config->item("curr_ver");?>"></script>
 <script src="<?= base_url()?>assets/js/backend/boletas_uniforme/index.js?v=<?=$this->config->item("curr_ver");?>"></script>
 
 <script src="<?=base_url()?>assets/js/backend/form/list_form.js?v=<?=$this->config->item("curr_ver");?>"></script>
 <script>
+	var tabletmp = null;
 	$('.datepicker-autoclose').datepicker({
 		autoclose: true,
 		todayHighlight: true
@@ -166,11 +188,59 @@ type="text/css" />
 		})
 	}
 	window.onload = () => {
-		$('#datatableaux').DataTable( {
+		$('.input-daterange-datepicker').daterangepicker({
+			buttonClasses: ['btn', 'btn-sm'],
+			applyClass: 'btn-success',
+			cancelClass: 'btn-default',
+			autoclose: true,
+			autoclose: true
+		});
+
+		$('#fecharecibo').change(function(event) {
+			let ss = 0;
+			$.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+				const $startdate = $('#fecharecibo').data('daterangepicker').startDate._d.toISOString().substring(0, 10);
+				const $enddate = $('#fecharecibo').data('daterangepicker').endDate._d.toISOString().substring(0, 10);
+
+				var createdAt = data[6] || 0; // Our date column in the table
+
+				if (createdAt != 0) createdAt = `${createdAt.substring(6,10)}-${createdAt.substring(3,5)}-${createdAt.substring(0,2)}`
+				if (($startdate == "" || $enddate == "") || (moment(createdAt).isSameOrAfter($startdate) && moment(createdAt).isSameOrBefore($enddate))) {
+					ss = ss + parseFloat(data[2])
+					return true;
+				} else {
+					return false;
+				}
+			});
+			console.log(ss);
+			tabletmp.draw();
+			$(tabletmp.column(2).footer()).html("Total: " + ss.toFixed(2));
+		});
+		
+		tabletmp =  $('#datatableaux').DataTable({
 			"processing": true,
 			"ajax": {
 				"url": "<?= base_url() ?>recibo/getData",
-				"type": "POST"
+				"type": "POST",
+				
+			},
+			initComplete:function(){
+				console.log("dd");
+				$('#datatableaux').DataTable().buttons().container().appendTo('#datatableaux_wrapper .col-md-6:eq(0)');
+			},
+			buttons: ['excel', 'pdf', 'colvis'],
+			columnDefs: [
+				{
+					targets: 6,
+					render: $.fn.dataTable.render.moment('DD/MM/YYYY')	
+				}
+			],
+			footerCallback: function (tfoot, data, start, end, display) {
+				var api = this.api();
+				var p = api.column(2).data().reduce(function (a, b) {
+					return a + parseFloat(b);
+				}, 0)
+				$(api.column(2).footer()).html("Total: " + p.toFixed(2));
 			},
 			"columns": [
 				{ className:"receipt_id", data: "receipt_id" },
@@ -180,7 +250,6 @@ type="text/css" />
 				{ className:"made_in", data: "made_in" },
 				{ className:"certificate_number", data: "certificate_number" },
 				{ className:"date_receipt", data: "date_receipt" },
-
 				{ 
 					data: "receipt_id",
 					sortalbe: false,
@@ -191,6 +260,9 @@ type="text/css" />
 					}
 				},
 			]
-		} );
+		});
+
+		//sum column price on datatable
+
 	}
 </script>
