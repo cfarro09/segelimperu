@@ -752,7 +752,7 @@
 
 <script type="text/javascript">
 	$('.datepicker-autoclose').datepicker({
-		autoclose: true,
+		autoclboletose: true,
 		todayHighlight: true
 	});
 </script>

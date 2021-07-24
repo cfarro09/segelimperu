@@ -38,7 +38,7 @@ class General_model extends CI_Model{
         }else{
             $response = array(
                 "success" => false,
-                "msg" => "Hubo un problema, vuelva."
+                "msg" => $this->db->error()
             );
         }
         return $response;

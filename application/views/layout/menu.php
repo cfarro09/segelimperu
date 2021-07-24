@@ -81,6 +81,11 @@
         </a>
       </li>
       <li>
+        <a href="<?= site_url() ?>recibo/listar">
+          <i class="mdi mdi-account-card-details"></i><span>Recibos</span>
+        </a>
+      </li>
+      <li>
         <a href="javascript: void(0);">
           <i class="mdi mdi-account-card-details"></i><span>Boletas Uniforme</span>
         </a>
