@@ -48,4 +48,15 @@ class Recibo extends CI_Controller
 		echo json_encode($response);
 
 	}
+
+	public function reporte($id)
+	{
+		$this->load->library('Reporte_recibo');
+		$pdf = new Reporte_recibo();
+		$pdf->AddPage();
+		$pdf->setHeader($id);
+
+		$pdf->Output();
+		// $pdf->Output(utf8_decode("reporte_fichas_" . $id . ".pdf"), 'D');
+	}
 }
