@@ -52,10 +52,11 @@ class Reporte_recibo extends FPDF{
 	function setHeader($id)
 	{
         $this->SetFont('Arial','B',18);
-		$this->Image('assets/images/reporte_logo.png',30,10,93,36);
         $this->SetLineWidth(0.4);
-        $this->SetDrawColor(39,153,8);
         $this->SetFillColor(255);
+        $this->SetDrawColor(39,153,8);
+        $this->RoundedRect(13, 10, 185, 147, 3.5, 'DF');
+		$this->Image('assets/images/logo_segel.png',30,12,85,27);
         $this->RoundedRect(125, 20, 68, 30, 3.5, 'DF');
         $this->SetFillColor(39,153,8);
         $this->Rect(125,29,68,12,'F');
@@ -80,8 +81,71 @@ class Reporte_recibo extends FPDF{
         $this->SetX(33);
         $this->Cell(80,4,utf8_decode('Telf.: 471 8938 / Cel: 975 365 954'),0,1,'C');
 		// $this->Image('assets/images/reporte_perfiles.png',139,22,50);
-		$this->Ln(40);
+		$this->Ln(10);
 	}
+
+    public function setDatosRecibo($data)
+    {
+        $cellMargin = 2 * 1.000125;
+        $this->SetFont('Arial','',12);
+        $this->SetTextColor(64,117,204);
+        $this->SetDrawColor(86,132,210);
+	    $this->setX($this->margin_left);
+	    $this->Cell(45, 8, 'Hemos recibido de:',0,0);
+	    $this->Cell(126, 8, utf8_decode($data->client),0,1,'L');
+
+        $this->setX($this->margin_left);
+	    $this->Cell(45, 8, 'La suma de:',0,0);
+        $this->Cell(126, 8, 'S/  ' . number_format($data->price, 2, ',', '.'),0,1,'L');
+        
+        $this->SetFont('Arial','',11);
+        $y = $this->GetY();
+        $this->setX($this->margin_left);
+        $concepto = $data->concept;
+        $width = $this->GetStringWidth($concepto);
+        $rows = ceil($width / (126 - $cellMargin));
+        $h = 6 * $rows;
+        $this->MultiCell(45, $h, utf8_decode('Por concepto de:'), 0, 'L');
+        $this->SetXY($this->margin_left + 45, $y);
+        $this->MultiCell(126, 8, utf8_decode($concepto), 0, 'L');
+
+        $this->SetFont('Arial','',12);
+
+        $this->setX($this->margin_left);
+	    $this->Cell(45, 8, 'Realizado en:',0,0);
+        $this->Cell(126, 8, utf8_decode($data->made_in),0,1,'L');
+        
+        $this->setX($this->margin_left);
+	    $this->Cell(45, 8, utf8_decode('Nº Acta Conformidad:'),0,0);
+        $this->Cell(126, 8, utf8_decode($data->certificate_number),0,1,'L');
+        $this->Ln(10);
+
+        $this->setX($this->margin_left);
+	    $this->Cell(45, 8, utf8_decode('Pague conforme'),0,0,'C');
+        $this->Cell(10, 8, '',0,0,'C');
+        $this->Cell(45, 8, utf8_decode('Recibí conforme'),0,1,'C');
+
+        $this->setX($this->margin_left + 61);
+        $this->Cell(45, 5, utf8_decode('Nombre:'),0,1,'L');
+        $this->setX($this->margin_left + 61);
+        $this->Cell(45, 5, utf8_decode('DNI:'),0,0,'L');
+
+
+        $fecha_recibo = explode("-", $data->date_receipt);
+        $this->Cell(65, 8, utf8_decode('Lima, ' . $fecha_recibo[2] . ' de ' . $fecha_recibo[1] . ' del ' . $fecha_recibo[0]),0,1,'R');
+        
+        $this->SetLineWidth(0.1);
+        $this->SetDash(1,1); //5mm on, 5mm off
+
+        $lineas = ($rows > 1 ) ? 7 : 6;
+        for ($i=1; $i < $lineas; $i++) { 
+            $this->Line(65,69 + ($i*8),190, 69 + ($i*8));
+        }
+
+        $h1 = ($rows > 1 ) ? 130 : 122;
+        $this->Line($this->margin_left,$h1,65,$h1);
+        $this->Line($this->margin_left + 57,$h1,118,$h1);
+    }
 
 	function setDatosFicha($codigo,$revision,$vigencia)
 	{
@@ -959,5 +1023,14 @@ class Reporte_recibo extends FPDF{
         $h = $this->h;
         $this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c ', $x1*$this->k, ($h-$y1)*$this->k,
             $x2*$this->k, ($h-$y2)*$this->k, $x3*$this->k, ($h-$y3)*$this->k));
+    }
+
+    function SetDash($black=null, $white=null)
+    {
+        if($black!==null)
+            $s=sprintf('[%.3F %.3F] 0 d',$black*$this->k,$white*$this->k);
+        else
+            $s='[] 0 d';
+        $this->_out($s);
     }
 }

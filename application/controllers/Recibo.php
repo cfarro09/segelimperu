@@ -52,9 +52,11 @@ class Recibo extends CI_Controller
 	public function reporte($id)
 	{
 		$this->load->library('Reporte_recibo');
+		$data = $this->General_model->get_data_id_dynamic('receipt', array('receipt_id' => $id))[0];
 		$pdf = new Reporte_recibo();
 		$pdf->AddPage();
 		$pdf->setHeader($id);
+		$pdf->setDatosRecibo($data);
 
 		$pdf->Output();
 		// $pdf->Output(utf8_decode("reporte_fichas_" . $id . ".pdf"), 'D');
