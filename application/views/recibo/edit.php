@@ -25,7 +25,7 @@
 									<option value="gorro">Gorro</option>
 									<option value="chaleco">Chaleco</option>
 									<option value="casaca">Casaca</option>
-									<option value="fotocheck">Dotocheck</option>
+									<option value="fotocheck">Fotocheck</option>
 									<option value="tocasdetela">Tocas de tela</option>
 									<option value="mandil">Mandil</option>
 									<option value="trajeprotector">Traje Protector</option>

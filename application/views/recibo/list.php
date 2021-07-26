@@ -256,7 +256,7 @@ type="text/css" />
 					render: function( data, type, full, meta ) {
 						return `<a href="#" onclick="editrecibo(this, ${full.receipt_id})"><i class="action fa fa-edit "></i></a>
 						<a href="#" onclick="delete_reg(${full.receipt_id}, 'receipt_id', 'receipt', 'Recibo')" class="action fa fa-trash pl-1 remove_list"></i></a>
-						<a href="<?= site_url() ?>recibo/reporte/${full.receipt_id}" class="action fa fa-file-pdf-o pl-1"></i></a>`
+						<a target="_blank" href="<?= site_url() ?>recibo/reporte/${full.receipt_id}" class="action fa fa-file-pdf-o pl-1"></i></a>`
 					}
 				},
 			]
