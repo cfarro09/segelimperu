@@ -121,7 +121,7 @@ class BoletasUnif extends CI_Controller
 
 			$full_name = $boleta->apellido_pat . " " . $boleta->apellido_mat . " " . $boleta->nombres;
 			$full_name = iconv('UTF-8', 'windows-1252', $full_name);
-			$name_pdf = "resumen_$boleta->dni";
+			$name_pdf = "FICHA PERSONAL - $full_name";
 			$this->load->library('fpdf_gen');
 			//cabecera
 			$this->fpdf->AliasNbPages();
