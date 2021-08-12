@@ -94,7 +94,7 @@ class Reporte_certificado extends FPDF{
         $this->SetXY(95,23);
         $this->Cell(55,3,utf8_decode('CERTIFICADO Nº '),0,0,'L');
         $this->SetTextColor(0);
-        $this->Cell(20,3,str_pad('id', 11, "0", STR_PAD_LEFT),0,0,'L');
+        $this->Cell(20,3,str_pad($data->certificadoid, 11, "0", STR_PAD_LEFT),0,0,'L');
 
         $this->Ln(10);
         $this->SetFont('Arial','',10);
@@ -107,45 +107,45 @@ class Reporte_certificado extends FPDF{
 
         $this->SetFont('Arial','',9);
         $this->SetX(52);
-        $this->Cell(5,4,'(  )',0,0,'L');
+        $this->Cell(5,4,'(' . (($data->servicio == 'DESINSECTACION') ? "X" : '  ') . ')',0,0,'L');
         $this->Cell(35,4,utf8_decode('Desinsectación'),0,0,'L');
-        $this->Cell(5,4,'(  )',0,0,'L');
+        $this->Cell(5,4,'(' . (($data->servicio == 'LIMPIEZARESERVORIO') ? "X" : '  ') . ')',0,0,'L');
         $y = $this->GetY();
         $x = $this->GetX();
         $this->MultiCell(50,3,utf8_decode('Limpieza y desinfección de reservarios de agua'),0,'L');
         $this->SetY($y);
         $this->SetX($x+50);
-        $this->Cell(5,4,'(  )',0,0,'L');
+        $this->Cell(5,4,'(' . (($data->servicio == 'LIMPIEZATANQUE') ? "X" : '  ') . ')',0,0,'L');
         $this->Cell(43,4,utf8_decode('Limpieza de tanque séptico'),0,0,'L');
         $this->Ln(9);
 
         $this->SetX(52);
-        $this->Cell(5,4,'(  )',0,0,'L');
+        $this->Cell(5,4,'(' . (($data->servicio == 'DESRATIZACION') ? "X" : '  ') . ')',0,0,'L');
         $this->Cell(35,4,utf8_decode('Desratizacón'),0,0,'L');
-        $this->Cell(5,4,'(  )',0,0,'L');
+        $this->Cell(5,4,'(' . (($data->servicio == 'DESINFECCION') ? "X" : '  ') . ')',0,0,'L');
         $this->Cell(19,4,utf8_decode('Desinfección'),0,0,'L');
         $this->SetFont('Arial','B',6);
-        $this->Cell(43,4,utf8_decode('(Protocolo Covid-19/Aplicación de Virucida DQM/Resol. 3365-2017/DCEA/DIGESA/SA)'),0,0,'L');
+        $this->Cell(43,4,(($data->servicio == 'DESINFECCION') ? '(Protocolo Covid-19/Aplicación de Virucida DQM/Resol. 3365-2017/DCEA/DIGESA/SA)' : ''),0,0,'L');
         $this->Ln(8);
 
         $this->SetFont('Arial','',9);
         $this->SetX(43);
         $this->Cell(6,5,utf8_decode('A: '),0,0,'L');
-        $this->Cell(154,5,utf8_decode('Nombre / Razon social'),'B',1,'L');
+        $this->Cell(154,5,utf8_decode(strtoupper($data->cliente)),'B',1,'L');
         $this->Ln(4);
 
-        $direccion = utf8_decode('Direccion muy larga adsfasASDASDF dfffffffffffffffffffffffffffffffffffffffffffffffffffffff asdf sa asdf asdf asdfsfasfddaf asd');
+        $direccion = utf8_decode($data->ubicacion);
         $dir_w = $this->GetStringWidth($direccion);
         $rows = ceil($dir_w / (142 - $cellMargin));
         $h = 5 * $rows;
 
         $this->SetX(41);
         $this->Cell(20,$h,utf8_decode('Ubicado en:'),0,0,'L');
-        $this->MultiCell(142,5,$direccion,'B','L');
+        $this->MultiCell(142,5,strtoupper($direccion),'B','L');
         $this->Ln(4);
 
         $this->SetFont('Arial','',7);
-        $giro = utf8_decode('VENTA AL POR MAYOR NO ESPECIALIZADA');
+        $giro = utf8_decode($data->giro);
         $giro_w = $this->GetStringWidth($giro);
         $rows = ceil($giro_w / (59 - $cellMargin));
         $h = 5 * $rows;
@@ -157,12 +157,12 @@ class Reporte_certificado extends FPDF{
         $x = $this->GetX();
 
         $this->SetFont('Arial','',7);
-        $this->MultiCell(59,5,$giro,'B','C');
+        $this->MultiCell(59,5,strtoupper($giro),'B','C');
         $this->SetY($y+$h-5);
         $this->SetX($x+59);
 
         $this->SetFont('Arial','',7);
-        $area_tratada = utf8_decode('AREA TOTAL (1ER.PISO-2DO.PISO Y SOTANO) AREA TOTAL (1ER.PISO-2DO.PISO Y SOTANO)');
+        $area_tratada = utf8_decode($data->area);
         $area_tratada_w = $this->GetStringWidth($area_tratada);
         $rows = ceil($area_tratada_w / (64 - $cellMargin));
         $h = 5 * $rows;
@@ -170,17 +170,20 @@ class Reporte_certificado extends FPDF{
         $this->SetFont('Arial','',9);
         $this->Cell(22,$h,utf8_decode(' Area Tratada: '),0,0,'L');
         $this->SetFont('Arial','',7);
-        $this->MultiCell(64,5,$area_tratada,'B','C');
+        $this->MultiCell(64,5,strtoupper($area_tratada),'B','C');
         $this->Ln(4);
 
+        setlocale(LC_TIME, "spanish");
+        $fechacreacion = strftime("%d - %B - %Y", strtotime($data->fechacreacion));
+        $fechaservicio = strftime("%d - %B - %Y", strtotime($data->fechaservicio));
         $this->SetX(43);
         $this->SetFont('Arial','',9);
-        $this->Cell(12,5,utf8_decode('Fcha: '),0,0,'L');
-        $this->SetFont('Arial','',7);
-        $this->Cell(59,5,utf8_decode('VENCIMIENTO: 02-OCTUBRE-2021'),'B',0,'L');
+        $this->Cell(12,5,utf8_decode('Fecha: '),0,0,'L');
+        $this->SetFont('Arial','',9);
+        $this->Cell(59,5,utf8_decode(strtoupper($fechacreacion)),'B',0,'C');
         $this->SetFont('Arial','',9);
         $this->Cell(33,5,utf8_decode('Fecha de Servicios: '),0,0,'L');
-        $this->Cell(56,5,utf8_decode('03-AGOSTO-2021 '),'B',1,'L');
+        $this->Cell(56,5,utf8_decode(strtoupper($fechaservicio)),'B',1,'C');
         $this->Ln(23);
 
         $this->SetX(63);
