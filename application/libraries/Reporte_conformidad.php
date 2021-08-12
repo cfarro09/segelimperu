@@ -129,7 +129,7 @@ class Reporte_conformidad extends FPDF{
         $this->Cell(135,7,utf8_decode($data->responsable),'B',1,'L');
         $this->Ln(8);
 
-        setlocale(LC_TIME, "spanish");
+        setlocale(LC_TIME, "es_ES");
         $mes = strftime("%B", strtotime($data->fechaservicio));
         $date = explode('-', $data->fechaservicio);
         $this->SetTextColor(62,105,167);
