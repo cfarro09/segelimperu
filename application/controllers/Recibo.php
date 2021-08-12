@@ -25,9 +25,22 @@ class Recibo extends CI_Controller
 		$this->layout->view('recibo/list', $data);
 	}
 
+	public function actas()
+	{
+		$data['menu_tables'] =  $this->General_model->get_tables_active();
+
+		$this->layout->view('recibo/actas', $data);
+	}
+
 	public function getData()
 	{
 		$data = $this->General_model->get_data_dynamic("receipt", "*");
+		die(json_encode(array("data" => $data)));
+	}
+
+	public function getDataActa()
+	{
+		$data = $this->General_model->get_data_dynamic("acta", "*");
 		die(json_encode(array("data" => $data)));
 	}
 
@@ -35,8 +48,6 @@ class Recibo extends CI_Controller
 	{
 		$data = html_purify($this->input->post());
 		if ($data["receipt_id"] != "0") {
-			// die(json_encode($data));
-		
 			$where = array("receipt_id" => $data["receipt_id"]);
 			unset($data['receipt_id']);
 			$response = $this->General_model->edit_dynamic('receipt', $where, $data);
@@ -44,9 +55,21 @@ class Recibo extends CI_Controller
 			unset($data['receipt_id']);
 			$response = $this->General_model->insert_dynamic("receipt", $data);
 		}
-
 		echo json_encode($response);
+	}
 
+	public function insertaracta()
+	{
+		$data = html_purify($this->input->post());
+		if ($data["actaid"] != "0") {
+			$where = array("actaid" => $data["actaid"]);
+			unset($data['actaid']);
+			$response = $this->General_model->edit_dynamic('acta', $where, $data);
+		} else {
+			unset($data['actaid']);
+			$response = $this->General_model->insert_dynamic("acta", $data);
+		}
+		echo json_encode($response);
 	}
 
 	public function reporte($id)
