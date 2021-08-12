@@ -56,3 +56,8 @@ label.custom-control-label{
 .Pronto{
 	background: #FFF083;
 }
+table {
+	display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
