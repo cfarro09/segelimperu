@@ -20,7 +20,7 @@ type="text/css" />
 						
 						<div class="col-lg-6 col-md-12">
 							<div class="form-group">
-								<label for="" class="control-label">numeroorden</label>
+								<label for="" class="control-label">N° orden</label>
 								<input autocomplete="off" required type="text" name="numeroorden" id="numeroorden" class="form-control input_detail">
 							</div>
 						</div>
@@ -52,7 +52,7 @@ type="text/css" />
 						</div>
 						<div class="col-lg-6 col-md-12">
 							<div class="form-group">
-								<label for="" class="control-label">area</label>
+								<label for="" class="control-label">Área</label>
 								<input autocomplete="off" required type="text" name="area" id="area" class="form-control input_detail">
 							</div>
 						</div>
@@ -88,7 +88,7 @@ type="text/css" />
 						</div>
 						<div class="col-lg-6 col-md-12">
 							<div class="form-group">
-								<label for="" class="control-label">giro</label>
+								<label for="" class="control-label">Giro</label>
 								<input autocomplete="off" required type="text" name="giro" id="giro" class="form-control input_detail">
 							</div>
 						</div>
