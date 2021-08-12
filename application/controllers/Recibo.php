@@ -84,4 +84,32 @@ class Recibo extends CI_Controller
 		$pdf->Output();
 		// $pdf->Output(utf8_decode("reporte_fichas_" . $id . ".pdf"), 'D');
 	}
+	
+	public function reporte_certificado($id)
+	{
+		$this->load->library('Reporte_certificado');
+		$data = $this->General_model->get_data_id_dynamic('receipt', array('receipt_id' => $id))[0];
+		// $data = $this->General_model->get_data_id_dynamic('acta', array('acta_id' => $id))[0];
+		$pdf = new Reporte_certificado();
+		$pdf->AddPage();
+		$pdf->setHeader($id);
+		$pdf->setData($data);
+
+		$pdf->Output();
+		// $pdf->Output(utf8_decode("reporte_fichas_" . $id . ".pdf"), 'D');
+	}
+	
+	public function reporte_acta($id)
+	{
+		$this->load->library('Reporte_conformidad');
+		$data = $this->General_model->get_data_id_dynamic('acta', array('actaid' => $id))[0];
+		$pdf = new Reporte_conformidad();
+		$pdf->AddPage();
+		$pdf->setHeader($id);
+		$pdf->setData($data);
+		$pdf->setFooter($data);
+
+		// $pdf->Output();
+		$pdf->Output(utf8_decode("reporte_conformidad_" . $id . ".pdf"), 'D');
+	}
 }
