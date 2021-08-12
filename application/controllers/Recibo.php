@@ -28,8 +28,13 @@ class Recibo extends CI_Controller
 	public function actas()
 	{
 		$data['menu_tables'] =  $this->General_model->get_tables_active();
-
 		$this->layout->view('recibo/actas', $data);
+	}
+
+	public function certificados()
+	{
+		$data['menu_tables'] =  $this->General_model->get_tables_active();
+		$this->layout->view('recibo/certificados', $data);
 	}
 
 	public function getData()
@@ -43,6 +48,13 @@ class Recibo extends CI_Controller
 		$data = $this->General_model->get_data_dynamic("acta", "*");
 		die(json_encode(array("data" => $data)));
 	}
+
+	public function getDataCertificado()
+	{
+		$data = $this->General_model->get_data_dynamic("certificado", "*");
+		die(json_encode(array("data" => $data)));
+	}
+
 
 	public function insertar()
 	{
@@ -68,6 +80,19 @@ class Recibo extends CI_Controller
 		} else {
 			unset($data['actaid']);
 			$response = $this->General_model->insert_dynamic("acta", $data);
+		}
+		echo json_encode($response);
+	}
+	public function insertarcertificado()
+	{
+		$data = html_purify($this->input->post());
+		if ($data["certificadoid"] != "0") {
+			$where = array("certificadoid" => $data["certificadoid"]);
+			unset($data['certificadoid']);
+			$response = $this->General_model->edit_dynamic('certificado', $where, $data);
+		} else {
+			unset($data['certificadoid']);
+			$response = $this->General_model->insert_dynamic("certificado", $data);
 		}
 		echo json_encode($response);
 	}
