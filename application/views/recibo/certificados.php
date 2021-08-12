@@ -10,7 +10,7 @@ type="text/css" />
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-				<h4 class="modal-title">certificado conformidad</h4>
+				<h4 class="modal-title">Certificado conformidad</h4>
 			</div>
 			<input type="hidden" name="thispage" id="thispage" value="edit">
 			<form id="form_recibo">
@@ -22,7 +22,7 @@ type="text/css" />
 							<div class="form-group">
 								<label for="" class="control-label">Servicio</label>
 								<select required name="servicio" id="servicio" class="form-control input_detail">
-									<option>DESINFECCION</option>
+									<option>DESINSECTACION</option>
 									<option>LIMPIEZARESERVORIO</option>
 									<option>LIMPIEZATANQUE</option>
 									<option>DESRATIZACION</option>
@@ -93,7 +93,7 @@ type="text/css" />
 		<div class="row">
 			<div class="col-12">
 				<div class="page-title-box">
-					<h4 class="page-title float-left">RESUMEN DE certificadoS DE CONFORMIDAD</h4>
+					<h4 class="page-title float-left">RESUMEN DE CERTIFICADOS DE CONFORMIDAD</h4>
 					<ol class="breadcrumb float-right">
 						<li class="breadcrumb-item"><a href="#">Adminox</a></li>
 						<li class="breadcrumb-item"><a href="#">Gestor</a></li>
@@ -132,12 +132,6 @@ type="text/css" />
 							</tr>
 						</thead>
 						<tbody></tbody>
-						<tfoot>
-							<tr>
-								<th colspan="7">Total</th>
-								<th id="total_order"></th>
-							</tr>
-						</tfoot>
 					</table>
 				</div>
 			</div>
@@ -178,8 +172,6 @@ type="text/css" />
 	}
 	function editrecibo (obj, id) {
 		certificadoid.value = id;
-
-
 		servicio.value = $(obj).parent().parent().find(".servicio").text();
 		fechaservicio.value = $(obj).parent().parent().find(".fechaservicio").text();
 		vencimiento.value = $(obj).parent().parent().find(".vencimiento").text();
@@ -218,7 +210,7 @@ type="text/css" />
 				const $startdate = $('#fecharecibo').data('daterangepicker').startDate._d.toISOString().substring(0, 10);
 				const $enddate = $('#fecharecibo').data('daterangepicker').endDate._d.toISOString().substring(0, 10);
 
-				var createdAt = data[6] || 0; // Our date column in the table
+				var createdAt = data[2] || 0; // Our date column in the table
 
 				if (createdAt != 0) createdAt = `${createdAt.substring(6,10)}-${createdAt.substring(3,5)}-${createdAt.substring(0,2)}`
 				if (($startdate == "" || $enddate == "") || (moment(createdAt).isSameOrAfter($startdate) && moment(createdAt).isSameOrBefore($enddate))) {
@@ -229,7 +221,6 @@ type="text/css" />
 				}
 			});
 			tabletmp.draw();
-			$(tabletmp.column(2).footer()).html("Total: " + ss.toFixed(2));
 		});
 		
 		tabletmp =  $('#datatableaux').DataTable({
@@ -248,13 +239,6 @@ type="text/css" />
 					render: $.fn.dataTable.render.moment('YYYY-MM-DD')	
 				}
 			],
-			footerCallback: function (tfoot, data, start, end, display) {
-				var api = this.api();
-				var p = api.column(2).data().reduce(function (a, b) {
-					return a + parseFloat(b);
-				}, 0)
-				$(api.column(2).footer()).html("Total: " + p.toFixed(2));
-			},
 			"columns": [
 
 				{ className:"certificadoid", data: "certificadoid" },
@@ -271,7 +255,7 @@ type="text/css" />
 					render: function( data, type, full, meta ) {
 						return `<a href="#" onclick="editrecibo(this, ${full.certificadoid})"><i class="action fa fa-edit "></i></a>
 						<a href="#" onclick="delete_reg(${full.certificadoid}, 'certificadoid', 'certificado', 'certificado')" class="action fa fa-trash pl-1 remove_list"></i></a>
-						<a target="_blank" href="<?= site_url() ?>recibo/reportecertificado/${full.certificadoid}" class="action fa fa-file-pdf-o pl-1"></i></a>`
+						<a target="_blank" href="<?= site_url() ?>recibo/reporte_certificado/${full.certificadoid}" class="action fa fa-file-pdf-o pl-1"></i></a>`
 					}
 				},
 			]

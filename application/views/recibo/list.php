@@ -35,7 +35,7 @@ type="text/css" />
 						<div class="col-lg-6 col-xs-12">
 							<div class="form-group">
 								<label for="" class="control-label">N° acta conformidad</label>
-								<input autocomplete="off" required type="number"  name="certificate_number" id="certificate_number" class="form-control input_detail">
+								<input autocomplete="off" required name="certificate_number" id="certificate_number" class="form-control input_detail">
 							</div>
 						</div>
 

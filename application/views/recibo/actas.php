@@ -155,12 +155,6 @@ type="text/css" />
 							</tr>
 						</thead>
 						<tbody></tbody>
-						<tfoot>
-							<tr>
-								<th colspan="7">Total</th>
-								<th id="total_order"></th>
-							</tr>
-						</tfoot>
 					</table>
 				</div>
 			</div>
@@ -244,7 +238,7 @@ type="text/css" />
 				const $startdate = $('#fecharecibo').data('daterangepicker').startDate._d.toISOString().substring(0, 10);
 				const $enddate = $('#fecharecibo').data('daterangepicker').endDate._d.toISOString().substring(0, 10);
 
-				var createdAt = data[6] || 0; // Our date column in the table
+				var createdAt = data[2] || 0; // Our date column in the table
 
 				if (createdAt != 0) createdAt = `${createdAt.substring(6,10)}-${createdAt.substring(3,5)}-${createdAt.substring(0,2)}`
 				if (($startdate == "" || $enddate == "") || (moment(createdAt).isSameOrAfter($startdate) && moment(createdAt).isSameOrBefore($enddate))) {
@@ -255,7 +249,6 @@ type="text/css" />
 				}
 			});
 			tabletmp.draw();
-			$(tabletmp.column(2).footer()).html("Total: " + ss.toFixed(2));
 		});
 		
 		tabletmp =  $('#datatableaux').DataTable({
@@ -274,13 +267,6 @@ type="text/css" />
 					render: $.fn.dataTable.render.moment('YYYY-MM-DD')	
 				}
 			],
-			footerCallback: function (tfoot, data, start, end, display) {
-				var api = this.api();
-				var p = api.column(2).data().reduce(function (a, b) {
-					return a + parseFloat(b);
-				}, 0)
-				$(api.column(2).footer()).html("Total: " + p.toFixed(2));
-			},
 			"columns": [
 
 				{ className:"actaid", data: "actaid" },
@@ -301,7 +287,7 @@ type="text/css" />
 					render: function( data, type, full, meta ) {
 						return `<a href="#" onclick="editrecibo(this, ${full.actaid})"><i class="action fa fa-edit "></i></a>
 						<a href="#" onclick="delete_reg(${full.actaid}, 'actaid', 'acta', 'Acta')" class="action fa fa-trash pl-1 remove_list"></i></a>
-						<a target="_blank" href="<?= site_url() ?>recibo/reporteacta/${full.actaid}" class="action fa fa-file-pdf-o pl-1"></i></a>`
+						<a target="_blank" href="<?= site_url() ?>recibo/reporte_acta/${full.actaid}" class="action fa fa-file-pdf-o pl-1"></i></a>`
 					}
 				},
 			]
