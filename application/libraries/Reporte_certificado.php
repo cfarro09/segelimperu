@@ -173,7 +173,7 @@ class Reporte_certificado extends FPDF{
         $this->MultiCell(64,5,strtoupper($area_tratada),'B','C');
         $this->Ln(4);
 
-        setlocale(LC_TIME, "spanish");
+        setlocale(LC_TIME, "es_ES.UTF-8");
         $fechacreacion = strftime("%d - %B - %Y", strtotime($data->fechacreacion));
         $fechaservicio = strftime("%d - %B - %Y", strtotime($data->fechaservicio));
         $this->SetX(43);
