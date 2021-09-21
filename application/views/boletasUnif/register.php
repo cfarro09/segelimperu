@@ -22,7 +22,7 @@
 									<option value="polo_mangacorta">Polo Mangacorta</option>
 									<option value="pantalon">Pantalon</option>
 									<option value="gorro">Gorro</option>
-									<option value="chaleco">Chaleco</option>
+									<option value="chaleco">Chaleco<gig/option>
 									<option value="casaca">Casaca</option>
 									<option value="fotocheck">Fotocheck</option>
 									<option value="tocasdetela">Tocas de tela</option>
