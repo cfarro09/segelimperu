@@ -651,7 +651,7 @@
 							</div>
 							<div id="div_apellido_mat" class="col-lg-6 col-xs-12 mb-2">
 								<label>Apellido Materno</label>
-								<input required autocomplete="off" id="apellido_mat" name="apellido_mat" type="text" class="form-control sololetras input_detail" maxlength="100">
+								<input autocomplete="off" id="apellido_mat" name="apellido_mat" type="text" class="form-control input_detail" maxlength="100">
 							</div>
 							<div id="div_nombres" class="col-lg-6 col-xs-12 mb-2">
 								<label>Nombres</label>
