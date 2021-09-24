@@ -125,7 +125,7 @@ class Reporte_certificado extends FPDF{
         $this->Cell(5,4,'(' . (($data->servicio == 'DESINFECCION') ? "X" : '  ') . ')',0,0,'L');
         $this->Cell(19,4,utf8_decode('Desinfección'),0,0,'L');
         $this->SetFont('Arial','B',6);
-        $this->Cell(43,4,(($data->servicio == 'DESINFECCION') ? '(Protocolo Covid-19/Aplicación de Virucida DQM/Resol. 3365-2017/DCEA/DIGESA/SA)' : ''),0,0,'L');
+        $this->Cell(43,4,utf8_decode('(Protocolo Covid-19/Aplicación de Virucida DQM/Resol. 3365-2017/DCEA/DIGESA/SA)'),0,0,'L');
         $this->Ln(8);
 
         $this->SetFont('Arial','',9);
