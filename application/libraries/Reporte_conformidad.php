@@ -175,13 +175,6 @@ class Reporte_conformidad extends FPDF{
         $this->Cell(70,7,'SUPERVISOR DE SERVICIO',0,1,'C');
 
         $this->Cell(70,6,'DNI:',0,1,'L');
-        $this->Cell(12,6,'GIRO: ',0,0,'L');
-        $this->SetTextColor(0);
-        $this->Cell(70,6,utf8_decode($data->giro),0,1,'L');
-        $this->SetTextColor(62,105,167);
-        $this->Cell(27,6,'VENCIMIENTO: ',0,0,'L');
-        $this->SetTextColor(0);
-        $this->Cell(70,6,utf8_decode($data->vencimiento),0,1,'L');
         $this->SetTextColor(62,105,167);
         $this->Ln(9);
 
