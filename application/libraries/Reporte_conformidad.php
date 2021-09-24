@@ -149,7 +149,7 @@ class Reporte_conformidad extends FPDF{
 
         $this->Cell(21,7,'servicio de:',0,0,'L');
         $this->SetTextColor(0);
-        $this->Cell(171,5,utf8_decode('LIMPIEZA INTEGRAL'),'B',1,'C');
+        $this->Cell(171,5,utf8_decode($data->servicio),'B',1,'C');
         $this->Ln(3);
 
         $direccion = utf8_decode($data->ubicacion);
