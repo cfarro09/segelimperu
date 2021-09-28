@@ -27,6 +27,7 @@ type="text/css" />
 									<option>LIMPIEZATANQUE</option>
 									<option>DESRATIZACION</option>
 									<option>DESINFECCION</option>
+									<option>DESINFECCION (COVID19)</option>
 								</select>
 							</div>
 						</div>
