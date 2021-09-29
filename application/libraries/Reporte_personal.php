@@ -295,6 +295,7 @@ class Reporte_personal extends FPDF{
 
 	function setDatosHijos($datos_hijos)
 	{
+		$cellMargin = 2 * 1.000125;
 		$hijos = json_decode($datos_hijos);
 	    $this->SetFillColor(187,214,238);
 	    $this->Cell(0,9,' 5. DATOS DE LOS HIJOS',1,2,'L',true);
@@ -302,70 +303,73 @@ class Reporte_personal extends FPDF{
 
 	    // Cabecera
 	    $this->SetFont('Arial','B',8);
+		$y = $this->GetY();
 
-	    $this->Cell(6,12,'Nr','LTB',0,'C',0);
-	    $this->Cell(37,6,'APELLIDOS Y','LT',2);
-		$this->Cell(37,6,'NOMBRES','LB',0);
-		$y = $this->GetY()-6;
-		$x = $this->GetX(); 
-		$this->SetXY($x,$y);
-		$this->Cell(21,6,'FECHA DE','LT',2);
-		$this->Cell(21,6,'NACIMIENTO','LB',0);
-		$y = $this->GetY()-6;
-		$x = $this->GetX(); 
-		$this->SetXY($x,$y);
-		$this->Cell(20,12,'DNI','LTB',0,'C',0);
-		$this->Cell(22,6,'GRADO DE','LT',2);
-		$this->Cell(22,6,'INSTRUCCION','LB',0);
-		$y = $this->GetY()-6;
-		$x = $this->GetX(); 
-		$this->SetXY($x,$y);
-		$this->Cell(27,12,'OCUPACION','LTB',0,'C',0);
-		$this->Cell(15,6,'VIVE CON','LT',2,'C');
-		$this->Cell(15,6,'USTED','LB',0,'C');
-		$y = $this->GetY()-6;
-		$x = $this->GetX(); 
-		$this->SetXY($x,$y);
-		$this->Cell(22,6,'ASEGURADO','LTR',2,'C');
-		$this->Cell(22,6,'EN ESSALUD','LBR',0,'C');
-		$y = $this->GetY()-6;
-		$x = $this->GetX(); 
-		$this->SetXY($x,$y);
-		$this->Ln(12);
+		$this->MultiCell(6,8,'Nr',1,'C');
+		$x = $this->GetX();
+
+		$this->SetXY($x+6 , $y);
+		$this->MultiCell(37,8,'APELLIDOS Y NOMBRES',1,'C');
+		
+		$this->SetXY($x+43,$y);
+		$this->MultiCell(21,4,'FECHA DE NACIMIENTO',1,'C');
+
+		$this->SetXY($x+64,$y);
+		$this->MultiCell(20,8,'DNI',1,'C');
+
+		$this->SetXY($x+84,$y);
+		$this->MultiCell(22,4,'GRADO DE INSTRUCCION',1,'C');
+
+		$this->SetXY($x+106,$y);
+		$this->MultiCell(27,8,'OCUPACION',1,'C');
+
+		$this->SetXY($x+133,$y);
+		$this->MultiCell(16,4,'VIVE CON USTED',1,'C');
+
+		$this->SetXY($x+149,$y);
+		$this->MultiCell(22,4,'ASEGURADO EN ESSALUD',1,'C');
 
 		$this->SetFont('Arial','',8);
 
-		$w = [6,37,21,20,22,27,15,22];
-		$x = $this->GetX(); //20
-
-		foreach ($hijos as $key=>$hijo)
-		{
-			$h = $this->calculateLineH($hijo,$w); // 12
-			$i = 1;
-			
-			$x = $this->GetX();
-	        $y = $this->GetY();			
-	        //Draw the border
-	        $this->Rect($x,$y,$w[0],$h);
-			$this->MultiCell($w[0],6,$key+1,0,'C');
-			$this->SetXY($x+$w[0],$y);
-
-			foreach ($hijo as $prop) {
-				$width = $w[$i];
-
-				$x = $this->GetX();
-	        	$y = $this->GetY();
-	        	$a = 'C';
-	        	$a= ($i==1) ? 'L' : 'C';
-	        	//Draw the border
-	        	$this->Rect($x,$y,$width,$h);
-
-				$this->MultiCell($width,6,utf8_decode($prop),0,$a);
-
-	        	$this->SetXY($x+$width,$y);
-	        	$i+=1;
+		$w = [37,21,20,22,27,16,22]; # Los diferentes widths de las celdas
+		foreach ($hijos as $key => $hijo) {
+			$rows = [];
+			# Calcular el row que ocupara cada columna
+			$indx = 0;
+			foreach ($hijo as $ix => $prop) {
+				$cell_width = $w[$indx];
+				$width = $this->GetStringWidth($prop);
+        		$row = ceil($width / ($cell_width - $cellMargin));
+				array_push($rows, $row);
+				$indx++;
 			}
-			$this->Ln($h);
+
+			$r_max = max($rows);
+			$h_final = 4 * $r_max;
+
+			$y = $this->GetY();
+			$this->MultiCell(6,8,$key+1,1,'C');
+
+			$this->SetXY($x + 6, $y);
+			$this->MultiCell($w[0], ($h_final / $rows[0]) , utf8_decode( $hijo->nombrecompleto ) ,1,'L');
+
+			$this->SetXY($x + 6 + array_sum(array_slice($w,0,1)) , $y);
+			$this->MultiCell($w[1], ($h_final / $rows[1]) , utf8_decode( $hijo->fechanacimiento ) ,1,'C');
+
+			$this->SetXY($x + 6 + array_sum(array_slice($w,0,2)) , $y);
+			$this->MultiCell($w[2], ($h_final / $rows[2]) , utf8_decode( $hijo->dni ) ,1,'C');
+
+			$this->SetXY($x + 6 + array_sum(array_slice($w,0,3)) , $y);
+			$this->MultiCell($w[3], ($h_final / $rows[3]) , utf8_decode( $hijo->grado ) ,1,'C');
+
+			$this->SetXY($x + 6 + array_sum(array_slice($w,0,4)) , $y);
+			$this->MultiCell($w[4], ($h_final / $rows[4]) , utf8_decode( $hijo->ocupacion ) ,1,'C');
+
+			$this->SetXY($x + 6 + array_sum(array_slice($w,0,5)) , $y);
+			$this->MultiCell($w[5], ($h_final / $rows[5]) , utf8_decode( $hijo->viveconud ) ,1,'C');
+
+			$this->SetXY($x + 6 + array_sum(array_slice($w,0,6)) , $y);
+			$this->MultiCell($w[6], ($h_final / $rows[6]) , utf8_decode( $hijo->seguroessalud ) ,1,'C');
 		}
 	    $this->Ln(7);
 	}
