@@ -114,4 +114,13 @@ class General_model extends CI_Model{
         $query = $this->db->get("Personal");
         return ($query->num_rows() >= 1) ? $query->result() : false;
     }
+
+
+	function getAsistencias() {
+		$this->db->select("ac.assistcontrolid, ac.personalid, ac.assist_date, ac.time_start, ac.time_end, ac.company, CONCAT(p.nombres, ' ', p.apellido_pat, ' ', p.apellido_mat) personal");
+		$this->db->join('Personal p' ,'p.idPersonal = ac.personalid', 'INNER');
+		$this->db->order_by("ac.assist_date", "desc");
+		$query = $this->db->get("assistcontrol ac");
+		return ($query->num_rows() >= 1) ? $query->result() : [];
+	}
 }

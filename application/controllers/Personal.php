@@ -37,16 +37,38 @@ class Personal extends CI_Controller
 	{
 
 		$data['menu_tables'] =  $this->General_model->get_tables_active();
-
-
-
 		$data['listpersonal'] = $this->General_model->get_data_dynamic("Personal", "*");
 
 		$this->layout->view('personal/list', $data);
 
 	}
 
+	public function asistencia() {
+		$data['menu_tables'] =  $this->General_model->get_tables_active();
+		$data['personal'] = $this->General_model->get_data_dynamic("Personal", "*");
 
+		$this->layout->view('personal/asistencia', $data);
+	}
+
+	public function getAsistencias()
+	{
+		$data = $this->General_model->getAsistencias();
+		die(json_encode(array("data" => $data)));
+	}
+
+	public function asistenciainsertar()
+	{
+		$data = html_purify($this->input->post());
+		if ($data["assistcontrolid"] != "0") {
+			$where = array("assistcontrolid" => $data["assistcontrolid"]);
+			unset($data['assistcontrolid']);
+			$response = $this->General_model->edit_dynamic('assistcontrol', $where, $data);
+		} else {
+			unset($data['assistcontrolid']);
+			$response = $this->General_model->insert_dynamic("assistcontrol", $data);
+		}
+		echo json_encode($response);
+	}
 
 	public function generar_ficha1($pdf, $inf, $con, $hij, $emp)
 
