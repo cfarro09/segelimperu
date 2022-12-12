@@ -232,7 +232,7 @@
 				dataType: 'json',
 				success: function(response) {
 					if (response) {
-						$('#dni').val(response[0]['nrodocumento']);
+						$('#dni').val(response[0]['nrodocumento'].trim());
 						$('#nombres').val(response[0]['nombres']);
 						$('#apellido_pat').val(response[0]['apellido_pat']);
 						$('#apellido_mat').val(response[0]['apellido_mat']);
