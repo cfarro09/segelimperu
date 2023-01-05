@@ -799,7 +799,7 @@ class Reporte_personal extends FPDF{
 	function setImagenPagina($rutaimagen)
 	{
 		$this->AddPage();
-		$this->centerImage($rutaimagen);
+		$this->centerImage(str_replace("https://www.birlay.com", "http://164.68.119.67", $rutaimagen));
 	}
 	function WriteHTML($html)
     {
