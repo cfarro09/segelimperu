@@ -107,7 +107,7 @@ class Reporte_personal extends FPDF{
 	    $this->Cell(85,9,utf8_decode($nombres),1,2);
 	    // $this->Image('assets/images/reporte_foto_perfil.png',$imgX+140,$imgY-9,30);
 	    if(!empty($url_foto)){
-			$this->Image($url_foto,$imgX+137,$imgY-9,33,44);
+			$this->Image(str_replace("https://www.birlay.com", "164.68.119.67", $url_foto),$imgX+137,$imgY-9,33,44);
 		}
 	    $this->Ln(8);
 	    $this->setX(25);
@@ -447,7 +447,7 @@ class Reporte_personal extends FPDF{
 		$y = $this->GetY();
 		// $this->Image('assets/images/reporte_foto_direccion.png',$x,$y,170);
 		if(!empty($url_foto_direccion)){
-			$this->Image($url_foto_direccion,$x+6,$y,158,53);
+			$this->Image(str_replace("https://www.birlay.com", "164.68.119.67", $url_foto_direccion),$x+6,$y,158,53);
 		}
 	}
 
@@ -491,7 +491,7 @@ class Reporte_personal extends FPDF{
 		$this->Ln(60);
 		$this->SetFont('Arial',null,10);
 		if(!empty($url_foto_firma)){
-			$this->Image($url_foto_firma,$x+28,$y+18,120,48);
+			$this->Image(str_replace("https://www.birlay.com", "164.68.119.67", $url_foto_firma),$x+28,$y+18,120,48);
 		}
 		// $this->Cell(0,6,'FIRMA Y HUELLA DACTILAR',0,0,'C');
 	}
@@ -598,7 +598,7 @@ class Reporte_personal extends FPDF{
 		$y = $this->Gety();
 		$this->Ln(52);
 		if(!empty($url_foto_firma)){
-			$this->Image($url_foto_firma,47,$y+10,120,48);
+			$this->Image(str_replace("https://www.birlay.com", "164.68.119.67", $url_foto_firma),47,$y+10,120,48);
 		}
 		// $this->Cell(0,6,'FIRMA Y HUELLA DACTILAR',0,0,'C');
 	}
@@ -635,7 +635,7 @@ class Reporte_personal extends FPDF{
 		$y = $this->Gety();
 		$this->Ln(52);
 		if(!empty($url_foto_firma)){
-			$this->Image($url_foto_firma,47,$y+10, 120, 48);
+			$this->Image(str_replace("https://www.birlay.com", "164.68.119.67", $url_foto_firma),47,$y+10, 120, 48);
 		}
 		// $this->Cell(0,6,'FIRMA Y HUELLA DACTILAR',0,0,'C');
 	}
@@ -791,7 +791,7 @@ class Reporte_personal extends FPDF{
 		$y = $this->Gety();
 		$this->Ln(34);
 		if(!empty($url_foto_firma)){
-			$this->Image($url_foto_firma, 53, $y, 120, 48);
+			$this->Image(str_replace("https://www.birlay.com", "164.68.119.67", $url_foto_firma), 53, $y, 120, 48);
 		}
 		// $this->Cell(0, 4, 'FIRMA Y HUELLA DACTILAR', 0, 0, 'C');
 	}
