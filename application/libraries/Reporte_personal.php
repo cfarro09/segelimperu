@@ -25,7 +25,7 @@ class Reporte_personal extends FPDF{
 
 	function resizeToFit($imgFilename)
 	{
-		$a = str_replace("https://www.birlay.com", "http://164.68.119.67", $imgFilename)
+		$a = str_replace("https://www.birlay.com", "http://164.68.119.67", $imgFilename);
 		list($width, $height) = getimagesize($this->centerImage($a));
 		$widthScale = self::MAX_WIDTH / $width;
 		$heightScale = self::MAX_HEIGHT / $height;
