@@ -21,6 +21,8 @@
 									<option value="polo_mangalarga">Polo Mangalarga</option>
 									<option value="polo_mangacorta">Polo Mangacorta</option>
 									<option value="pantalon">Pantalon</option>
+									<option value="celular">Celular</option>
+									<option value="cargador">Cargador</option>
 									<option value="gorro">Gorro</option>
 									<option value="chaleco">Chaleco</option>
 									<option value="casaca">Casaca</option>
