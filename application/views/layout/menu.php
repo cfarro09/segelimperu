@@ -74,6 +74,7 @@ $es_rol_almacen = Almacen_acceso::es_operativo($rol_almacen);
 					<ul class="nav-second-level" aria-expanded=false>
 						<li><a href="<?= site_url('cecon') ?>">CECON</a></li>
 						<li><a href="<?= site_url('cecon/asistencia') ?>">Monitor de asistencia</a></li>
+						<li><a href="<?= site_url('usuarios_app') ?>">Usuarios de la app</a></li>
 					</ul>
 				</li>
 			<?php endif ?>
