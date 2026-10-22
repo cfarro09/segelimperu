@@ -67,6 +67,14 @@ $es_rol_almacen = Almacen_acceso::es_operativo($rol_almacen);
 						<i class="fa fa-drivers-license-o"></i><span> Permisos</span>
 					</a>
 				</li>
+				<li>
+					<a href="javascript: void(0);">
+						<i class="mdi mdi-factory"></i><span>Operaciones</span>
+					</a>
+					<ul class="nav-second-level" aria-expanded=false>
+						<li><a href="#">CECON</a></li>
+					</ul>
+				</li>
 			<?php endif ?>
 
 			<li class="menu-title" id="navigation">Navigation</li>
