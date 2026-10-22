@@ -11,4 +11,12 @@ $estado=Cecon_model::ESTADOS[$t->status] ?? array($t->status, 'badge-secondary')
     <td class="pendiente-detalle"><?= trim((string)$t->supervisor_comment)!==''?nl2br(html_escape($t->supervisor_comment)):'—' ?></td>
     <td class="pendiente-detalle"><?php if($t->descargo!==null): ?><?= nl2br(html_escape($t->descargo)) ?><div class="small text-muted"><?= html_escape(trim(($t->descargo_por ?? '').' · '.Cecon_model::fecha($t->descargo_en), ' ·')) ?></div><?php else: ?>—<?php endif; ?></td>
     <td data-order="<?= html_escape((string)$t->closed_at) ?>"><?= $t->closed_at?html_escape(Cecon_model::fecha($t->closed_at)):'—' ?></td>
+    <td class="almacen-celda-acciones"><div class="almacen-acciones-iconos">
+        <button type="button" class="btn btn-light" data-cecon-detalle
+            data-codigo="<?= html_escape($t->ticket_code) ?>" data-registro="<?= html_escape(Cecon_model::fecha($t->created_at)) ?>" data-cliente="<?= html_escape((string)$t->cliente) ?>"
+            data-categoria="<?= html_escape((string)$t->categoria) ?>" data-area="<?= html_escape((string)$t->area) ?>" data-supervisor="<?= html_escape((string)$t->supervisor) ?>" data-estado="<?= html_escape($estado[0]) ?>"
+            data-comentario="<?= html_escape((string)$t->supervisor_comment) ?>" data-descargo="<?= html_escape($t->descargo!==null?trim($t->descargo."\n".trim(($t->descargo_por ?? '').' · '.Cecon_model::fecha($t->descargo_en), ' ·')):'') ?>"
+            data-cierre="<?= $t->closed_at?html_escape(Cecon_model::fecha($t->closed_at)):'' ?>"
+            data-almacen-tooltip title="Ver detalle" aria-label="Ver detalle de la tarea <?= html_escape($t->ticket_code) ?>" aria-haspopup="dialog"><i class="mdi mdi-eye" aria-hidden="true"></i></button>
+    </div></td>
 </tr>
