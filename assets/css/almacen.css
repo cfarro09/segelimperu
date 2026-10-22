@@ -365,3 +365,10 @@
 .cecon-progreso { display: flex; align-items: center; gap: 8px; min-width: 130px; }
 .cecon-progreso .progress { flex: 1; height: 8px; }
 .cecon-progreso span { font-size: 12px; min-width: 34px; text-align: right; }
+.cecon-modal.cecon-modal-chico .modal-dialog { max-width: 560px; }
+.cecon-modal-chico .modal-body { padding-top: 12px; padding-bottom: 8px; }
+.cecon-resumen { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 0 0 10px; color: #374151; }
+.cecon-resumen .mdi { color: #6b7280; }
+.cecon-operarios th { white-space: nowrap; }
+.cecon-operarios td { overflow-wrap: anywhere; }
+.cecon-operarios th[hidden], .cecon-operarios td[hidden] { display: none; }

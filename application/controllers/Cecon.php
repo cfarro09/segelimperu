@@ -50,6 +50,21 @@ class Cecon extends CI_Controller
             'vista' => $vista, 'clientes' => $clientes, 'supervisores' => $supervisores, 'resumen' => $resumen, 'conteos' => $conteos));
     }
 
+    // Operarios que registró el supervisor para un cliente y día (JSON, solo administradores, sin caché).
+    public function asistencia_detalle($cliente_id = '')
+    {
+        $this->load->model('Cecon_asistencia_model');
+        $json = function ($datos, $codigo = 200) {
+            $this->output->set_status_header($codigo)->set_content_type('application/json', 'utf-8')
+                ->set_header('Cache-Control: no-store')->set_output(json_encode($datos, JSON_UNESCAPED_UNICODE));
+        };
+        $fecha = Cecon_asistencia_model::fecha_valida($this->input->get('fecha'));
+        if (!ctype_digit((string) $cliente_id) || $fecha === null) { $json(array('error' => 'Solicitud inválida.'), 400); return; }
+        $detalle = $this->Cecon_asistencia_model->detalle_cliente((int) $cliente_id, $fecha);
+        if ($detalle === null) { $json(array('error' => 'El cliente no existe.'), 404); return; }
+        $json($detalle);
+    }
+
     // Detalle de una tarea en JSON, para la ventana de detalle. Las coordenadas y las fotos no viajan en el listado.
     public function detalle($id = '')
     {

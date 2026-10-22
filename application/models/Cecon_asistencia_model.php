@@ -53,6 +53,27 @@ class Cecon_asistencia_model extends CI_Model
         return $filas;
     }
 
+    // Quiénes registró cada supervisor para un cliente y día. Los nombres de los operarios son datos personales:
+    // se devuelven solo a administradores, bajo demanda, y nunca se escriben en logs.
+    public function detalle_cliente($cliente_id, $fecha)
+    {
+        $c = $this->db->query("SELECT c.id, c.codigo, c.nombre, TRIM(CONCAT(COALESCE(u.nombre_usu,''), ' ', COALESCE(u.apellido_pat,''))) AS supervisor
+                                 FROM almacen_clientes c LEFT JOIN Usuarios u ON u.id_usu = c.supervisor_id WHERE c.id = ?", array((int) $cliente_id))->row();
+        if (!$c) return null;
+        $filas = $this->db->query("SELECT submission_id, position, operator_first_name, operator_last_name, attended_at, status
+                                     FROM app_attendances WHERE client_id = ? AND attendance_date = ?
+                                    ORDER BY attended_at, submission_id, position, id", array((int) $cliente_id, $fecha))->result();
+        $envios = array(); $anulados = 0; $operarios = 0;
+        foreach ($filas as $f) {
+            if ($f->status !== 'REGISTERED') { $anulados++; continue; }
+            $operarios++;
+            if (!isset($envios[$f->submission_id])) $envios[$f->submission_id] = array('hora' => Cecon_model::hora($f->attended_at), 'operarios' => array());
+            $envios[$f->submission_id]['operarios'][] = trim($f->operator_first_name . ' ' . $f->operator_last_name);
+        }
+        return array('codigo' => $c->codigo, 'cliente' => $c->nombre, 'supervisor' => trim((string) $c->supervisor), 'fecha' => $fecha,
+            'operarios' => $operarios, 'anulados' => $anulados, 'envios' => array_values($envios));
+    }
+
     // Resumen por supervisor a partir de la lista de clientes (los clientes sin supervisor van en su propio grupo).
     public static function supervisores($clientes)
     {
