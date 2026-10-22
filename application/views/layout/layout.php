@@ -1,4 +1,4 @@
-<?php $es_almacen = strtolower($this->router->fetch_class()) === "almacen"; ?>
+<?php $es_almacen = strtolower($this->router->fetch_class()) === "almacen"; $usa_estilo_almacen = $es_almacen || strtolower($this->router->fetch_class()) === "cecon"; ?>
 
 <!DOCTYPE html>
 
@@ -71,8 +71,10 @@
     <link href="<?=base_url()?>assets/css/style.css" rel="stylesheet" type="text/css" />
 
 <link href="<?= base_url() ?>assets/css/datatables-segelim.css?v=<?= filemtime(FCPATH.'assets/css/datatables-segelim.css') ?>" rel="stylesheet">
-<?php if ($es_almacen): ?>
+<?php if ($usa_estilo_almacen): ?>
     <link href="<?= base_url() ?>assets/css/almacen.css?v=<?= filemtime(FCPATH.'assets/css/almacen.css') ?>" rel="stylesheet" type="text/css" />
+<?php endif; ?>
+<?php if ($es_almacen): ?>
     <script src="<?= base_url() ?>assets/js/almacen-ux.js?v=<?= filemtime(FCPATH.'assets/js/almacen-ux.js') ?>" defer></script>
     <?php endif; ?>
 </head>
@@ -109,7 +111,7 @@
 
 <script src="<?=base_url()?>assets/plugins/jquery-toastr/jquery.toast.min.js" type="text/javascript"></script>
 
-<body class="<?= $es_almacen ? 'almacen-modulo' : '' ?>">
+<body class="<?= $usa_estilo_almacen ? 'almacen-modulo' : '' ?>">
 
 
 
