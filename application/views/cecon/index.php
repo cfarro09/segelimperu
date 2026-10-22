@@ -35,7 +35,7 @@
                         <div class="cecon-fotos" data-cecon="fotos-campo"></div>
                         <ul class="cecon-datos">
                             <li><i class="mdi mdi-map-marker" aria-hidden="true"></i> <strong>Ubicación GPS:</strong> <span data-cecon="ubicacion"></span></li>
-                            <li><i class="mdi mdi-clock-outline" aria-hidden="true"></i> <strong>Hora de registro:</strong> <span data-cecon="registro"></span></li>
+                            <li><i class="mdi mdi-clock" aria-hidden="true"></i> <strong>Hora de registro:</strong> <span data-cecon="registro"></span></li>
                             <li><i class="mdi mdi-account" aria-hidden="true"></i> <strong>Supervisor:</strong> <span data-cecon="supervisor"></span></li>
                         </ul>
                         <div class="cecon-nota"><strong>Observación en sitio</strong><p data-cecon="comentario"></p></div>
@@ -47,7 +47,7 @@
                             <div class="cecon-fotos" data-cecon="fotos-descargo"></div>
                             <ul class="cecon-datos">
                                 <li><i class="mdi mdi-account" aria-hidden="true"></i> <strong>Responsable:</strong> <span data-cecon="descargo-por"></span></li>
-                                <li><i class="mdi mdi-clock-outline" aria-hidden="true"></i> <strong>Hora de descargo:</strong> <span data-cecon="descargo-hora"></span></li>
+                                <li><i class="mdi mdi-clock" aria-hidden="true"></i> <strong>Hora de descargo:</strong> <span data-cecon="descargo-hora"></span></li>
                                 <li data-cecon="cierre-fila"><i class="mdi mdi-flag-checkered" aria-hidden="true"></i> <strong>Cierre:</strong> <span data-cecon="cierre"></span></li>
                             </ul>
                             <div class="cecon-nota"><strong>Nota de solución del área</strong><p data-cecon="descargo-comentario"></p></div>
@@ -66,7 +66,7 @@ jQuery(function($) {
     function campo(nombre) { return raiz.querySelector('[data-cecon="'+nombre+'"]'); }
     function texto(nombre, valor) { campo(nombre).textContent=valor || '—'; }
     function fotos(nombre, urls, descripcion) {
-        var contenedor=campo(nombre); contenedor.textContent='';
+        var contenedor=campo(nombre); contenedor.textContent=''; contenedor.dataset.n=Math.min(urls.length, 3);
         if(!urls.length) { var vacio=document.createElement('p'); vacio.className='cecon-vacio'; vacio.textContent='Sin fotografías.'; contenedor.appendChild(vacio); return; }
         urls.forEach(function(url, i) {
             var enlace=document.createElement('a'), imagen=document.createElement('img');
