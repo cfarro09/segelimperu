@@ -372,3 +372,4 @@
 .cecon-operarios th { white-space: nowrap; }
 .cecon-operarios td { overflow-wrap: anywhere; }
 .cecon-operarios th[hidden], .cecon-operarios td[hidden] { display: none; }
+.cecon-clave { font-size: 18px; letter-spacing: .06em; padding: 4px 10px; background: #f3f4f6; border-radius: 6px; user-select: all; }

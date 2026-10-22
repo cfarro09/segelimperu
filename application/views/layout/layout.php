@@ -1,4 +1,4 @@
-<?php $es_almacen = strtolower($this->router->fetch_class()) === "almacen"; $usa_estilo_almacen = $es_almacen || strtolower($this->router->fetch_class()) === "cecon"; ?>
+<?php $es_almacen = strtolower($this->router->fetch_class()) === "almacen"; $usa_estilo_almacen = $es_almacen || in_array(strtolower($this->router->fetch_class()), array("cecon", "usuarios_app"), true); ?>
 
 <!DOCTYPE html>
 
