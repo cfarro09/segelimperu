@@ -13,6 +13,16 @@ class Index extends CI_Controller {
 	}
 
 	public function index(){
+		require_once APPPATH.'libraries/Almacen_acceso.php';
+		$rol = $this->session->userdata('tipo_usu');
+		if (Almacen_acceso::es_operativo($rol)) {
+			redirect(Almacen_acceso::inicio($rol));
+			return;
+		}
+		if ($this->session->userdata('tipo_usu') == "RC") {
+			redirect("recibo/listar", "refresh");
+		}
+
 		if ($this->session->userdata('tipo_usu') == "AD" || $this->session->userdata('tipo_usu') == "SA" ) {
 			$data['menu_tables']  = json_decode($this->session->userdata('menu_tables'));
 		}else{

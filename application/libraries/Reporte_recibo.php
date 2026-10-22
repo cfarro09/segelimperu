@@ -55,7 +55,7 @@ class Reporte_recibo extends FPDF{
         $this->SetLineWidth(0.4);
         $this->SetFillColor(255);
         $this->SetDrawColor(39,153,8);
-        $this->RoundedRect(13, 10, 185, 147, 3.5, 'DF');
+		$this->RoundedRect(13, 10, 185, 230, 3.5, 'DF');
 		$this->Image('assets/images/logo_segel.png',30,12,85,27);
         $this->RoundedRect(125, 20, 68, 30, 3.5, 'DF');
         $this->SetFillColor(39,153,8);
@@ -67,7 +67,7 @@ class Reporte_recibo extends FPDF{
         $this->SetXY(125,40);
         $this->Cell(68,12,utf8_decode('Nº '). str_pad($id, 5, "0", STR_PAD_LEFT),0,1,'C');
         $this->SetXY(33,41);
-        $this->SetTextColor(86,132,210);
+		$this->SetTextColor(36,79,143);
         $this->SetFont('Arial','',9);
         $this->Cell(40,4,'Limpieza de alfombras',0,0,'C');
         $this->Cell(40,4,'Fumigaciones',0,1,'C');
@@ -87,64 +87,119 @@ class Reporte_recibo extends FPDF{
     public function setDatosRecibo($data)
     {
         $cellMargin = 2 * 1.000125;
+		$phone_number = isset($data->phone_number) ? $data->phone_number : '';
+		$bank_account = isset($data->bank_account) ? $data->bank_account : '';
+		$liquidation_name = isset($data->liquidation_name) ? $data->liquidation_name : '';
+		$payer_name = isset($data->payer_name) ? $data->payer_name : '';
+		$conformity_name = isset($data->conformity_name) ? $data->conformity_name : '';
+		$payment_type = isset($data->payment_type) ? $data->payment_type : '';
+		$receipt_status = isset($data->receipt_status) && $data->receipt_status ? strtoupper($data->receipt_status) : 'PENDIENTE';
+		$worked_hours = isset($data->worked_hours) ? $data->worked_hours : '';
+		$status_observation = isset($data->status_observation) ? $data->status_observation : '';
         $this->SetFont('Arial','',12);
-        $this->SetTextColor(64,117,204);
-        $this->SetDrawColor(86,132,210);
+		$this->SetTextColor(36,79,143);
+		$this->SetDrawColor(64,117,204);
+		$labelWidth = 58;
+		$valueWidth = 113;
 	    $this->setX($this->margin_left);
-	    $this->Cell(45, 8, 'Hemos recibido de:',0,0);
-	    $this->Cell(126, 8, utf8_decode($data->client),0,1,'L');
+	    $this->Cell($labelWidth, 8, utf8_decode('Apellidos y nombres:'),0,0);
+	    $this->Cell($valueWidth, 8, utf8_decode($data->client),0,1,'L');
 
         $this->setX($this->margin_left);
-	    $this->Cell(45, 8, 'La suma de:',0,0);
-        $this->Cell(126, 8, 'S/  ' . number_format($data->price, 2, ',', '.'),0,1,'L');
+	    $this->Cell($labelWidth, 8, 'Monto:',0,0);
+        $this->Cell($valueWidth, 8, 'S/  ' . number_format($data->price, 2, ',', '.'),0,1,'L');
         
         $this->SetFont('Arial','',11);
         $y = $this->GetY();
         $this->setX($this->margin_left);
         $concepto = $data->concept;
         $width = $this->GetStringWidth($concepto);
-        $rows = ceil($width / (126 - $cellMargin));
+		$rows = ceil($width / ($valueWidth - $cellMargin));
         $h = 6 * $rows;
-        $this->MultiCell(45, $h, utf8_decode('Por concepto de:'), 0, 'L');
-        $this->SetXY($this->margin_left + 45, $y);
-        $this->MultiCell(126, 8, utf8_decode($concepto), 0, 'L');
+		$this->MultiCell($labelWidth, $h, utf8_decode('Concepto:'), 0, 'L');
+		$this->SetXY($this->margin_left + $labelWidth, $y);
+		$this->MultiCell($valueWidth, 8, utf8_decode($concepto), 0, 'L');
 
         $this->SetFont('Arial','',12);
 
         $this->setX($this->margin_left);
-	    $this->Cell(45, 8, 'Realizado en:',0,0);
-        $this->Cell(126, 8, utf8_decode($data->made_in),0,1,'L');
+	    $this->Cell($labelWidth, 8, 'Unidad:',0,0);
+        $this->Cell($valueWidth, 8, utf8_decode($data->made_in),0,1,'L');
         
         $this->setX($this->margin_left);
-	    $this->Cell(45, 8, utf8_decode('Nº Acta Conformidad:'),0,0);
-        $this->Cell(126, 8, utf8_decode($data->certificate_number),0,1,'L');
-        $this->Ln(10);
+	    $this->Cell($labelWidth, 8, utf8_decode('Nº doc. identidad:'),0,0);
+        $this->Cell($valueWidth, 8, utf8_decode($data->certificate_number),0,1,'L');
 
-        $this->setX($this->margin_left);
-	    $this->Cell(45, 8, utf8_decode('Pague conforme'),0,0,'C');
-        $this->Cell(10, 8, '',0,0,'C');
-        $this->Cell(45, 8, utf8_decode('Recibí conforme'),0,1,'C');
+		$this->setX($this->margin_left);
+	    $this->Cell($labelWidth, 8, utf8_decode('Nº celular:'),0,0);
+		$this->Cell($valueWidth, 8, utf8_decode($phone_number),0,1,'L');
 
-        $this->setX($this->margin_left + 61);
-        $this->Cell(45, 5, utf8_decode('Nombre:'),0,1,'L');
-        $this->setX($this->margin_left + 61);
-        $this->Cell(45, 5, utf8_decode('DNI:'),0,0,'L');
+		$this->setX($this->margin_left);
+	    $this->Cell($labelWidth, 8, utf8_decode('Banco / Nº cuenta:'),0,0);
+		$this->Cell($valueWidth, 8, utf8_decode($bank_account),0,1,'L');
 
+		$this->setX($this->margin_left);
+	    $this->Cell($labelWidth, 8, utf8_decode('Tipo de pago:'),0,0);
+		$this->Cell($valueWidth, 8, utf8_decode($payment_type),0,1,'L');
+
+		$this->setX($this->margin_left);
+	    $this->Cell($labelWidth, 8, utf8_decode('Responsable de liquidación:'),0,0);
+		$this->Cell($valueWidth, 8, utf8_decode($liquidation_name),0,1,'L');
+
+		$this->setX($this->margin_left);
+	    $this->Cell($labelWidth, 8, utf8_decode('Responsable del pago:'),0,0);
+		$this->Cell($valueWidth, 8, utf8_decode($payer_name),0,1,'L');
+
+		$this->setX($this->margin_left);
+	    $this->Cell($labelWidth, 8, utf8_decode('Estado:'),0,0);
+		$this->Cell($valueWidth, 8, utf8_decode(ucfirst(strtolower($receipt_status))),0,1,'L');
+
+		$this->setX($this->margin_left);
+	    $this->Cell($labelWidth, 8, utf8_decode('Horas trabajadas:'),0,0);
+		$this->Cell($valueWidth, 8, utf8_decode($worked_hours),0,1,'L');
+
+		if ($status_observation) {
+			$this->SetFont('Arial','',11);
+			$observationY = $this->GetY();
+			$this->setX($this->margin_left);
+			$this->MultiCell($labelWidth, 6, utf8_decode('Observaciones:'), 0, 'L');
+			$this->SetXY($this->margin_left + $labelWidth, $observationY);
+			$this->MultiCell($valueWidth, 6, utf8_decode($status_observation), 0, 'L');
+			$this->SetFont('Arial','',12);
+		}
+
+		$authorizationY = $this->GetY() + 12;
+		$this->SetDrawColor(64,117,204);
+		$this->SetLineWidth(0.3);
+		$this->Rect(74, $authorizationY, 45, 42);
+		if ($receipt_status === 'APROBADO') {
+			$this->SetFont('Arial','B',20);
+			$this->SetXY(74, $authorizationY + 8);
+			$this->Cell(45, 12, 'OK', 0, 0, 'C');
+			$this->SetFont('Arial','',12);
+		}
+		$this->Line(74, $authorizationY + 30, 119, $authorizationY + 30);
+		$this->SetFont('Arial','',9);
+		$this->SetXY(74, $authorizationY + 31);
+		$this->MultiCell(45, 4, utf8_decode('Autorización de pago'),0,'C');
+		$this->SetFont('Arial','',12);
+
+		$signatureY = $authorizationY + 42;
+		$this->SetY($signatureY);
 
         $fecha_recibo = explode("-", $data->date_receipt);
-        $this->Cell(65, 8, utf8_decode('Lima, ' . $fecha_recibo[2] . ' de ' . $fecha_recibo[1] . ' del ' . $fecha_recibo[0]),0,1,'R');
+		$this->setX($this->margin_left + 96);
+		$this->Cell(70, 8, utf8_decode('Lima, ' . $fecha_recibo[2] . ' de ' . $fecha_recibo[1] . ' del ' . $fecha_recibo[0]),0,1,'R');
         
-        $this->SetLineWidth(0.1);
+		$this->SetDrawColor(185,202,226);
+		$this->SetLineWidth(0.1);
         $this->SetDash(1,1); //5mm on, 5mm off
 
-        $lineas = ($rows > 1 ) ? 7 : 6;
+		$lineas = ($rows > 1 ) ? 12 : 11;
         for ($i=1; $i < $lineas; $i++) { 
-            $this->Line(65,69 + ($i*8),190, 69 + ($i*8));
+			$this->Line($this->margin_left + $labelWidth,69 + ($i*8),190, 69 + ($i*8));
         }
 
-        $h1 = ($rows > 1 ) ? 130 : 122;
-        $this->Line($this->margin_left,$h1,65,$h1);
-        $this->Line($this->margin_left + 57,$h1,118,$h1);
     }
 
 	function setDatosFicha($codigo,$revision,$vigencia)

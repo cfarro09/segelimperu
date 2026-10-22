@@ -8,6 +8,9 @@ class Permisos extends CI_Controller {
 		if (!$this->session->userdata('id_usu')) { //isLogin
 			redirect("login", "refresh");
 		}
+		if ($this->session->userdata('tipo_usu') == "RC") {
+			redirect("recibo/listar", "refresh");
+		}
 		if ($this->session->userdata('tipo_usu') != "SA" && $this->session->userdata('tipo_usu') != "AD") {
 			redirect("/", "refresh");
 		}

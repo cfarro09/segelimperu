@@ -161,7 +161,7 @@
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label for="">Nro° Boleta</label>
-								<input type="number" name="nro_boleta" id="nro_boleta" class="form-control" placheholder="Ingrese numero de boleta" required>
+								<input type="text" name="nro_boleta" id="nro_boleta" class="form-control" placheholder="Ingrese numero de boleta" required>
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label>Fecha</label>

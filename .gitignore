@@ -22,3 +22,11 @@ application/config/constants.php
 sftp-config.json
 sendgrid.env
 imagenes/
+
+# local/server artifacts that must never be committed
+tests/
+.claude/
+*.swp
+*.save
+decrypt*.php
+application/controllers/Decrypt_test.php

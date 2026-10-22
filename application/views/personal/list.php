@@ -49,10 +49,12 @@
 									<th class="text-center">Nombres</th>
 									<th class="text-center">N° Doc</th>
 									<th class="text-center">Tipo Doc.</th>
+									<th class="text-center">Fecha Cumpleaños</th>
 									<th class="text-center">Tipo Contrato</th>
 									<th class="text-center">Fecha ingreso</th>
 									<th class="text-center">Estado</th>
-									<th class="text-center">F. Vencimiento</th>
+									<th class="text-center">F. Vencimiento DNI</th>
+									<th class="text-center">F. Venc. Contrato</th>
 									<th class="text-center">F. Creado</th>
 									<th class="text-center">Ajustes</th>
 								</tr>
@@ -67,10 +69,12 @@
 											<td><?= $r->nombres ?></td>
 											<td><?= $r->nrodocumento ?></td>
 											<td><?= $r->tipodocumento ?></td>
+											<td><?= !empty($r->fecha_nacimiento) ? $r->fecha_nacimiento : "" ?></td>
 											<td><?= $r->tipocontrato ?></td>
 											<td><?= $r->fecha_ingreso ? $r->fecha_ingreso : "1999-09-09" ?></td>
 											<td><?= $r->estado ?></td>
-											<td><?= $r->fecha_vencimiento ? $r->fecha_vencimiento : "1999-09-09" ?></td>
+											<td><?= !empty($r->fecha_vencimiento_dni) ? $r->fecha_vencimiento_dni : "" ?></td>
+											<td><?= !empty($r->fecha_vencimiento) ? $r->fecha_vencimiento : "" ?></td>
 											<td><?= substr($r->datecreated, 0, 10) ?></td>
 											<td class="text-center">
 												<a href="<?= site_url() ?>personal/editar/<?= $r->idPersonal ?>"><i class="action fa fa-edit "></i></a>
@@ -100,6 +104,7 @@
 <script src="<?= base_url() ?>assets/plugins/datatables/buttons.html5.min.js"></script>
 <script src="<?= base_url() ?>assets/plugins/datatables/buttons.print.min.js"></script>
 <script src="<?= base_url() ?>assets/plugins/datatables/buttons.colVis.min.js"></script>
+<script src="<?= base_url() ?>assets/js/datatables-segelim.js?v=<?= filemtime(FCPATH.'assets/js/datatables-segelim.js') ?>"></script>
 <script src="https://cdn.datatables.net/plug-ins/1.10.20/dataRender/datetime.js"></script>
 
 <script src="<?= base_url() ?>assets/plugins/moment/moment.js"></script>
@@ -123,7 +128,7 @@
 				const $startdate = $('#fechavencimiento').data('daterangepicker').startDate._d.toISOString().substring(0, 10);
 				const $enddate = $('#fechavencimiento').data('daterangepicker').endDate._d.toISOString().substring(0, 10);
 
-				var createdAt = data[9] || 0; // Our date column in the table
+				var createdAt = data[11] || 0; // Our date column in the table (F. Venc. Contrato)
 				if (createdAt != 0) createdAt = `${createdAt.substring(6,10)}-${createdAt.substring(3,5)}-${createdAt.substring(0,2)}`
 				if (($startdate == "" || $enddate == "") || (moment(createdAt).isSameOrAfter($startdate) && moment(createdAt).isSameOrBefore($enddate))) {
 					return true;
@@ -138,7 +143,7 @@
 				const $startdate = $('#fechacreacion').data('daterangepicker').startDate._d.toISOString().substring(0, 10);
 				const $enddate = $('#fechacreacion').data('daterangepicker').endDate._d.toISOString().substring(0, 10);
 
-				var createdAt = data[10] || 0; // Our date column in the table
+				var createdAt = data[12] || 0; // Our date column in the table (F. Creado)
 				if (createdAt != 0) createdAt = `${createdAt.substring(6,10)}-${createdAt.substring(3,5)}-${createdAt.substring(0,2)}`
 				if (($startdate == "" || $enddate == "") || (moment(createdAt).isSameOrAfter($startdate) && moment(createdAt).isSameOrBefore($enddate))) {
 					return true;
@@ -169,34 +174,50 @@
 						"targets": 5
 					},
 					{
-						"targets": 6
+						"targets": 6,
+						render: $.fn.dataTable.render.moment('DD/MM/YYYY')
 					},
 					{
-						"targets": 7,
+						"targets": 7
+					},
+					{
+						"targets": 8,
 						render: $.fn.dataTable.render.moment('DD/MM/YYYY')
 
 
 					},
 					{
-						"targets": 8
-					},
-					{
-						"targets": 9,
-						render: $.fn.dataTable.render.moment('DD/MM/YYYY')
-
-
+						"targets": 9
 					},
 					{
 						"targets": 10,
 						render: $.fn.dataTable.render.moment('DD/MM/YYYY')
 
+
 					},
 					{
-						"targets": 11
+						"targets": 11,
+						render: $.fn.dataTable.render.moment('DD/MM/YYYY')
+
+
+					},
+					{
+						"targets": 12,
+						render: $.fn.dataTable.render.moment('DD/MM/YYYY')
+
+					},
+					{
+						"targets": 13
 					},
 				],
-				lengthChange: false,
-				buttons: ['excel', 'pdf', 'colvis'],
+				lengthChange: true,
+				buttons: [{
+					extend: 'excel',
+					exportOptions: {
+						columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+						modifier: { search: 'applied', order: 'applied' }
+					}
+				}, 'pdf', 'colvis'],
 				"scrollX": true,
 				"order": [
 					[0, "desc"]

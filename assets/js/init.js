@@ -1,6 +1,7 @@
 jQuery(document).ready(function () {
     // Select2
-    $(".select2").select2();
+    // Solo selects: el contenedor que genera Select2 también lleva la clase "select2".
+    $("select.select2").select2();
 
 	$('.menu_dynamic').on('click', function (e) {
 		e.preventDefault();

@@ -44,7 +44,7 @@
 									<td><?= $users->name_documento ?></td>
 									<td><?= $users->nro_documento ?></td>
 									<td><?= $users->email_usu ?></td>
-									<td><?= $users->tipo_usu ?></td>
+									<td><?= html_escape($users->nombre_rol) ?></td>
 									<td><?= ($users->estado_usu == "AC" ? '<span class="label label-success">Activo</span>' : ($users->estado_usu == "IN" ? '<span class="label label-danger">Inactivo</span>' : ($users->estado_usu == "PG" ? '<span class="label label-warning">Pendiente</span>' : '<span class="label label-danger">Rechazado</span>' ))) ?></td>
 									<td><a href="#" data-id="<?= $users->id_usu ?>" class="go_edit_usuario"><i class="fa fa-edit"></i></a></td>
 								</tr>
@@ -65,6 +65,7 @@
 <script src="<?php echo base_url(); ?>assets/plugins/datatables/dataTables.bootstrap4.min.js"></script>
 
 <script src="<?= base_url()?>assets/plugins/datatables/dataTables.buttons.min.js"></script>
+<script src="<?= base_url() ?>assets/js/datatables-segelim.js?v=<?= filemtime(FCPATH.'assets/js/datatables-segelim.js') ?>"></script>
 
 
 <script src="<?= base_url()?>assets/js/backend/toast_alert.js?v=<?=$this->config->item("curr_ver");?>"></script>

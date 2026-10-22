@@ -55,6 +55,9 @@
  */
 	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
 
+// El servidor está en otra zona horaria: la aplicación trabaja en hora de Lima (fechas, mes en curso, registros).
+date_default_timezone_set('America/Lima');
+
 /*
  *---------------------------------------------------------------
  * ERROR REPORTING

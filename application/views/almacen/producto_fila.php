@@ -1,0 +1,15 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+$precio_real = $p->precio_real === null ? $p->precio_valorado : $p->precio_real;
+$valor_real = $p->stock_confirmado ? ($p->valor_stock_real ?? round($p->stock*$precio_real,2)) : 0;
+$valor_valorado = $p->stock_confirmado ? ($p->valor_stock_valorado ?? round($p->stock*$p->precio_valorado,2)) : 0;
+?>
+<tr data-registro-id="<?= (int)$p->id ?>" data-categoria="<?= html_escape($p->categoria) ?>" data-stock="<?= html_escape($p->stock) ?>" data-stock-confirmado="<?= $p->stock_confirmado?'1':'0' ?>" data-valor-stock-real="<?= html_escape(isset($p->valor_stock_real)?$valor_real:number_format($valor_real,2,'.','')) ?>" data-valor-stock-valorado="<?= html_escape(isset($p->valor_stock_valorado)?$valor_valorado:number_format($valor_valorado,2,'.','')) ?>">
+    <td><?= html_escape($p->codigo) ?></td><td><?= html_escape($p->descripcion) ?></td><td><?= html_escape($p->categoria) ?></td><td><?= html_escape($p->marca) ?></td><td><?= html_escape($p->unidad) ?></td>
+    <td class="text-right"><?= number_format($p->precio_real === null ? $p->precio_valorado : $p->precio_real, 2) ?></td><td class="text-right"><?= number_format($p->precio_valorado, 2) ?></td>
+    <td class="text-right"><?= $p->stock_confirmado ? number_format($p->stock, 3) : '<span class="badge badge-warning">Por verificar</span>' ?></td><td class="text-right"><?= $p->stock_confirmado ? number_format($valor_valorado,2) : '—' ?></td><?php $dias_vence=!empty($p->vencimiento)?(int)floor((strtotime($p->vencimiento)-strtotime(date('Y-m-d')))/86400):null; ?><td data-order="<?= html_escape($p->vencimiento ?? '') ?>"><?php if($dias_vence!==null): ?><?= html_escape(date('m/Y',strtotime($p->vencimiento))) ?><?php if($dias_vence<0): ?> <span class="badge badge-danger">Vencido</span><?php elseif($dias_vence<=60): ?> <span class="badge badge-warning">Por vencer</span><?php endif; ?><?php endif; ?></td><td><?= $p->activo ? 'Activo' : '<span class="badge badge-secondary">Inactivo</span>' ?></td>
+    <td class="almacen-celda-acciones"><div class="almacen-acciones-iconos">
+        <a class="btn btn-light" href="<?= site_url('almacen/producto/'.$p->id) ?>" data-almacen-formulario="producto" data-editor-titulo="Editar producto" data-almacen-tooltip title="Editar producto" aria-label="Editar producto" aria-haspopup="dialog"><i class="mdi mdi-pencil" aria-hidden="true"></i></a>
+        <a class="btn btn-light" href="<?= site_url('almacen/inventario/'.$p->id).'?vista=movimiento' ?>" data-almacen-formulario="inventario" data-editor-titulo="Registrar movimiento" data-almacen-tooltip title="Registrar movimiento" aria-label="Registrar movimiento" aria-haspopup="dialog"><i class="mdi mdi-swap-horizontal" aria-hidden="true"></i></a>
+        <a class="btn btn-light" href="<?= site_url('almacen/inventario/'.$p->id).'?vista=historial' ?>" data-almacen-formulario="inventario" data-editor-titulo="Historial de inventario" data-almacen-tooltip title="Historial de inventario" aria-label="Historial de inventario" aria-haspopup="dialog"><i class="mdi mdi-history" aria-hidden="true"></i></a>
+    </div></td>
+</tr>

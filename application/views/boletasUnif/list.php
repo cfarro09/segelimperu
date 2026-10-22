@@ -62,7 +62,7 @@
 										<td class=""><?= $vol->dni ?></td>
 										<td class=""><?= $vol->nro_boleta ?></td>
 										<td class="text-center">
-											<a href="<?= site_url() ?>BoletasUnif/edit_vol/<?= $vol->nro_boleta ?>" target="_blank">Ver</a>
+											<a href="<?= site_url() ?>BoletasUnif/edit_vol/<?= rawurlencode($vol->nro_boleta) ?>" target="_blank">Ver</a>
 											<a href="<?= site_url() ?>BoletasUnif/pdf_resumen/<?= $vol->dni ?>" class="pl-2 pr-2">Resumen</a>
 										</td>
 									</tr>
@@ -86,6 +86,7 @@
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.html5.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.print.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.colVis.min.js"></script>
+<script src="<?= base_url() ?>assets/js/datatables-segelim.js?v=<?= filemtime(FCPATH.'assets/js/datatables-segelim.js') ?>"></script>
 
 <script src="<?= base_url()?>assets/js/backend/toast_alert.js?v=<?=$this->config->item("curr_ver");?>"></script>
 <script src="<?= base_url()?>assets/js/backend/boletas_uniforme/index.js?v=<?=$this->config->item("curr_ver");?>"></script>

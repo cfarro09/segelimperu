@@ -1,3 +1,13 @@
+<?php if (empty($boleta) || !isset($boleta[0])): ?>
+	<div class="content">
+		<div class="container-fluid">
+			<div class="alert alert-warning">No se encontró la boleta solicitada.</div>
+		</div>
+	</div>
+	<?php return; ?>
+<?php endif ?>
+<?php $boleta = $boleta[0]; ?>
+
 <div id="modal_detail" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -27,6 +37,8 @@
 									<option value="gorro">Gorro</option>
 									<option value="chaleco">Chaleco</option>
 									<option value="casaca">Casaca</option>
+									<option value="Mandil lona">Mandil lona</option>
+									<option value="barbiquejos">Barbiquejos</option>
 									<option value="fotocheck">Fotocheck</option>
 									<option value="tocasdetela">Tocas de tela</option>
 									<option value="mandil">Mandil</option>
@@ -43,6 +55,7 @@
 									<option value="poncho_inpermeable">Poncho inpermeable</option>
 									<option value="canguro">Canguro</option>
 									<option value="cross">Cross</option>
+									<option value="otros">Otros</option>
 								</select>
 							</div>
 						</div>
@@ -129,30 +142,30 @@
 						<div id="crate_form" class="form-group col-md-12 col-sm-12 col-xs-12 row">
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label for="">Apellido Paterno</label>
-								<input type="text" name="apellido_pat" id="apellido_pat" class="form-control" placheholder="Ingrese apellido paterno" value="<?= $boleta[0]->apellido_pat ?>" required>
+								<input type="text" name="apellido_pat" id="apellido_pat" class="form-control" placheholder="Ingrese apellido paterno" value="<?= $boleta->apellido_pat ?>" required>
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label for="">Apellido Materno</label>
-								<input type="text" name="apellido_mat" id="apellido_mat" class="form-control" placheholder="Ingrese apellido materno" value="<?= $boleta[0]->apellido_mat ?>" required>
+								<input type="text" name="apellido_mat" id="apellido_mat" class="form-control" placheholder="Ingrese apellido materno" value="<?= $boleta->apellido_mat ?>" required>
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label for="nombres">Nombres</label>
-								<input type="text" name="nombres" id="nombres" class="form-control" placheholder="Ingrese nombres" value="<?= $boleta[0]->nombres ?>" required>
+								<input type="text" name="nombres" id="nombres" class="form-control" placheholder="Ingrese nombres" value="<?= $boleta->nombres ?>" required>
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label for="dni">N° de Identificación</label>
-								<input type="number" name="dni" id="dni" class="form-control" placheholder="Ingrese nro de identificacion" value="<?= $boleta[0]->dni ?>" required>
+								<input type="number" name="dni" id="dni" class="form-control" placheholder="Ingrese nro de identificacion" value="<?= $boleta->dni ?>" required>
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label for="">Nro° Boleta</label>
-								<input type="number" disabled class="form-control" placheholder="Ingrese numero de boleta" required value="<?= $boleta[0]->nro_boleta ?>">
-								<input type="hidden" id="nro_boleta" name="nro_boleta" value="<?= $boleta[0]->nro_boleta ?>">
+								<input disabled class="form-control" placheholder="Ingrese numero de boleta" required value="<?= $boleta->nro_boleta ?>">
+								<input type="hidden" id="nro_boleta" name="nro_boleta" value="<?= $boleta->nro_boleta ?>">
 							</div>
 
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label>Fecha</label>
 								<div class="input-group">
-									<input type="text" name="fecha" class="form-control datepicker-autoclose" placeholder="mm/dd/yyyy" data-date-format="yyyy-mm-dd" value="<?= $boleta[0]->fecha ?>">
+									<input type="text" name="fecha" class="form-control datepicker-autoclose" placeholder="mm/dd/yyyy" data-date-format="yyyy-mm-dd" value="<?= $boleta->fecha ?>">
 									<div class="input-group-append">
 										<span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
 									</div>
@@ -160,7 +173,7 @@
 							</div>
 							<div class="col-lg-12 col-xs-12 mb-2">
 								<label for="observacion">Observación</label>
-								<textarea class="form-control" rows="5" name="observacion" id="observacion"><?= $boleta[0]->observacion ?></textarea>
+								<textarea class="form-control" rows="5" name="observacion" id="observacion"><?= $boleta->observacion ?></textarea>
 							</div>
 							<div class="col-lg-12 col-xs-12 my-2">
 								<div class="text-center">
