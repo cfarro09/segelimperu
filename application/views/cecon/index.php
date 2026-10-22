@@ -56,7 +56,10 @@
                 </div>
             </div>
         </div>
-        <div class="modal-footer"><button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
+            <button type="button" class="btn btn-success" data-cecon="aprobar" hidden><i class="mdi mdi-check" aria-hidden="true"></i> Aprobar descargo y certificar ticket</button>
+        </div>
     </div></div>
 </div>
 <?php $this->load->view('almacen/datatables'); ?>
@@ -92,13 +95,17 @@ jQuery(function($) {
             texto('descargo-comentario', d.descargo.comentario); texto('cierre', d.cierre); mostrar('cierre-fila', !!d.cierre);
             fotos('fotos-descargo', d.descargo.fotos, 'Fotografía del descargo');
         }
+        // Solo hay algo que aprobar cuando el área ya registró su descargo.
+        mostrar('aprobar', d.estado.codigo==='DISCHARGED');
         mostrar('contenido', true);
     }
+    // TODO: conectar "Aprobar descargo y certificar ticket" con el API para actualizar el estado de la tarea
+    // (sin contrato definido todavía; por ahora el botón no hace nada).
     $(document).on('click','[data-cecon-detalle]',function() {
         var boton=this;
         raiz.querySelector('#cecon-detalle-codigo').textContent=boton.dataset.codigo;
         campo('estado').textContent=''; campo('estado').className='badge';
-        mostrar('contenido', false); mostrar('error', false); mostrar('carga', true);
+        mostrar('contenido', false); mostrar('error', false); mostrar('aprobar', false); mostrar('carga', true);
         if(peticion) peticion.abort();
         modal.modal('show');
         peticion=$.ajax({url:urlDetalle+'/'+encodeURIComponent(boton.dataset.id), dataType:'json', cache:false})

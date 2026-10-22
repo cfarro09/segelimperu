@@ -45,7 +45,7 @@ class Cecon extends CI_Controller
         $lng = is_numeric($t->longitude) ? (float) $t->longitude : null;
         $json(array(
             'codigo'     => $t->ticket_code,
-            'estado'     => array('etiqueta' => $estado[0], 'clase' => $estado[1]),
+            'estado'     => array('codigo' => $t->status, 'etiqueta' => $estado[0], 'clase' => $estado[1]),
             'categoria'  => (string) $t->categoria,
             'cliente'    => (string) $t->cliente,
             'area'       => (string) $t->area,
