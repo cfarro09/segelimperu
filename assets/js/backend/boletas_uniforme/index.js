@@ -171,7 +171,7 @@ $(document).ready(function() {
 // JS LISTAR START*****************************************************************
 	if ($('#datatable').length > 0) {
 		var table = $('#datatable').DataTable({
-			lengthChange: false,
+			lengthChange: true,
 			"ordering": false,
 			buttons: [ 'excel', 'pdf', 'colvis'],
 			"scrollX": true,

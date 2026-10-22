@@ -25,6 +25,15 @@ class Reporte_personal extends FPDF{
 
 	function resizeToFit($imgFilename)
 	{
+		// Verificar si la imagen existe antes de procesar
+		if (empty($imgFilename) || !@getimagesize($imgFilename)) {
+			// Retornar dimensiones por defecto para evitar división por cero
+			return array(
+				round($this->pixelsToMM(self::MAX_WIDTH)),
+				round($this->pixelsToMM(self::MAX_HEIGHT))
+			);
+		}
+		
 		list($width, $height) = getimagesize($imgFilename);
 		$widthScale = self::MAX_WIDTH / $width;
 		$heightScale = self::MAX_HEIGHT / $height;
@@ -37,6 +46,12 @@ class Reporte_personal extends FPDF{
 
 	function centerImage($img)
 	{
+		// Verificar si la imagen existe antes de procesar
+		if (empty($img) || !@getimagesize($img)) {
+			// Omitir la imagen si no existe
+			return;
+		}
+		
 		list($width, $height) = $this->resizeToFit($img);
 		// you will probably want to swap the width/height
 		// around depending on the page's orientation

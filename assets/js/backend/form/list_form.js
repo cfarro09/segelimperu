@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	var table = $('#datatable-buttons').DataTable({
-		lengthChange: false,
+		lengthChange: true,
 		buttons: [ 'excel', 'pdf', 'colvis'],
 		"scrollX": true
 	});

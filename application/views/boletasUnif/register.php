@@ -24,9 +24,11 @@
 									<option value="celular">Celular</option>
 									<option value="cargador">Cargador</option>
 									<option value="gorro">Gorro</option>
-									<option value="chaleco">Chaleco<gig/option>
+									<option value="chaleco">Chaleco</option>
 									<option value="casaca">Casaca</option>
 									<option value="fotocheck">Fotocheck</option>
+									<option value="barbiquejos">Barbiquejos</option>
+									<option value="mandillona">Mandil lona</option>
 									<option value="tocasdetela">Tocas de tela</option>
 									<option value="mandil">Mandil</option>
 									<option value="trajeprotector">Traje Protector</option>
@@ -42,6 +44,7 @@
 									<option value="poncho_inpermeable">Poncho inpermeable</option>
 									<option value="canguro">Canguro</option>
 									<option value="cross">Cross</option>
+									<option value="otros">Otros</option>
 								</select>
 							</div>
 						</div>
@@ -162,7 +165,7 @@
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label for="">Nro° Boleta</label>
-								<input type="number" name="nro_boleta" id="nro_boleta" class="form-control" placheholder="Ingrese numero de boleta" required>
+								<input type="text" name="nro_boleta" id="nro_boleta" class="form-control" placheholder="Ingrese numero de boleta" required>
 							</div>
 							<div class="col-lg-6 col-xs-12 mb-2">
 								<label>Fecha</label>

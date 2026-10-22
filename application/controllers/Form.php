@@ -8,6 +8,9 @@ class Form extends CI_Controller {
 		if (!$this->session->userdata('id_usu')) { //isLogin
 			redirect("login", "refresh");
 		}
+		if ($this->session->userdata('tipo_usu') == "RC") {
+			redirect("recibo/listar", "refresh");
+		}
 		$this->load->library('html');
 		$this->load->library('layout', 'layout');
 		$this->load->model('General_model'); //this line always should be here in the constructor

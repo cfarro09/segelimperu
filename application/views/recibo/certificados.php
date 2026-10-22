@@ -150,6 +150,7 @@ type="text/css" />
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.html5.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.print.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.colVis.min.js"></script>
+<script src="<?= base_url() ?>assets/js/datatables-segelim.js?v=<?= filemtime(FCPATH.'assets/js/datatables-segelim.js') ?>"></script>
 <script src="https://cdn.datatables.net/plug-ins/1.10.20/dataRender/datetime.js"></script>
 
 <script src="<?= base_url() ?>assets/plugins/moment/moment.js"></script>

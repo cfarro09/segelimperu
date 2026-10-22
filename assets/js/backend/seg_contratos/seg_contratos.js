@@ -7,7 +7,7 @@ $(document).ready(function() {
 		autoclose: true
 	});
 	var table = $('#datatable').DataTable({
-		lengthChange: false,
+		lengthChange: true,
 		buttons: [ 'excel', 'pdf', 'colvis'],
 		"scrollX": true,
 		"order": [[ 3, "desc" ]],

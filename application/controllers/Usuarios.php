@@ -8,6 +8,9 @@ class Usuarios extends CI_Controller {
 		if (!$this->session->userdata('id_usu')) { //isLogin
 			redirect("login", "refresh");
 		}
+		if ($this->session->userdata('tipo_usu') == "RC") {
+			redirect("recibo/listar", "refresh");
+		}
 		$this->load->library('layout', 'layout');
 		$this->load->library('html');
 		$this->load->model('User_model');

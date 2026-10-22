@@ -4,6 +4,13 @@ require_once APPPATH.'third_party/fpdf181/fpdf.php';
 
 class Reporte_conformidad extends FPDF{
 
+    private $soluciones = false;
+
+    public function setSoluciones($soluciones)
+    {
+        $this->soluciones = (bool) $soluciones;
+    }
+
 	public $margin_left = 20;
 	var $B=0;
     var $I=0;
@@ -52,7 +59,17 @@ class Reporte_conformidad extends FPDF{
 	function setHeader($id)
 	{
         $this->SetFont('Arial','B',12);
-		$this->Image('assets/images/logo-grande.png',34,5,140);
+        if ($this->soluciones) {
+            $logo = FCPATH . 'assets/images/logo-soluciones-original.jpeg';
+            if (is_file($logo)) {
+                $this->Image($logo,34,5,140);
+            } else {
+                $this->SetXY(34,12);
+                $this->Cell(140,10,utf8_decode('SEGELIMPERÚ SOLUCIONES AMBIENTALES S.A.C.'),0,0,'C');
+            }
+        } else {
+            $this->Image('assets/images/logo-grande.png',34,5,140);
+        }
         $this->SetTextColor(62,105,167);
         $this->SetDrawColor(62,105,167);
         $this->Ln(39);
@@ -183,6 +200,16 @@ class Reporte_conformidad extends FPDF{
 
 	function setFooter()
 	{
+        if ($this->soluciones) {
+            $logo = FCPATH . 'assets/images/logo-soluciones-original.jpeg';
+            if (is_file($logo)) {
+                $this->Image($logo,132,215,60);
+            } else {
+                $this->SetXY(11,255);
+                $this->MultiCell(192,7,utf8_decode('SEGELIMPERÚ SOLUCIONES AMBIENTALES S.A.C.'),0,'C');
+            }
+            return;
+        }
 		$this->SetXY(11,255);
         $this->MultiCell(192,7,utf8_decode('Dirección: Calle Enrique Barrón Nº 1323, Urb. Santa Beatriz - Lima Teléfono: 472-5307'),0,'C');
         $this->SetX(11);

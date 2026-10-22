@@ -24,6 +24,12 @@ class Personal extends CI_Controller
 
 		}
 
+		if ($this->session->userdata('tipo_usu') == "RC") {
+
+			redirect("recibo/listar", "refresh");
+
+		}
+
 		$this->load->library('html');
 
 		$this->load->library('layout', 'layout');

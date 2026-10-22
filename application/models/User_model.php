@@ -156,9 +156,10 @@ class User_model extends CI_Model{
 
     }
     function get_all_users(){
-        $this->db->select("id_usu, , tipo_usu,nombre_usu, apellido_pat, apellido_mat, name_documento, nro_documento, email_usu, estado_usu");
+        $this->db->select("id_usu, tipo_usu,nombre_usu, apellido_pat, apellido_mat, name_documento, nro_documento, email_usu, estado_usu, COALESCE(Type_working.name_work, Usuarios.tipo_usu) AS nombre_rol");
         $this->db->where('tipo_usu !="SA"');
         $this->db->join('Tipos_documentos', 'Tipos_documentos.id_type = Usuarios.id_tipo_doc', 'left');
+        $this->db->join('Type_working', 'Type_working.work_char = Usuarios.tipo_usu', 'left');
 
         $query = $this->db->get('Usuarios');
         return ($query->num_rows() >= 1) ? $query->result() : false;

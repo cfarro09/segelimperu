@@ -172,6 +172,7 @@ type="text/css" />
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.html5.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.print.min.js"></script>
 <script src="<?= base_url()?>assets/plugins/datatables/buttons.colVis.min.js"></script>
+<script src="<?= base_url() ?>assets/js/datatables-segelim.js?v=<?= filemtime(FCPATH.'assets/js/datatables-segelim.js') ?>"></script>
 <script src="https://cdn.datatables.net/plug-ins/1.10.20/dataRender/datetime.js"></script>
 
 <script src="<?= base_url() ?>assets/plugins/moment/moment.js"></script>
@@ -287,7 +288,8 @@ type="text/css" />
 					render: function( data, type, full, meta ) {
 						return `<a href="#" onclick="editrecibo(this, ${full.actaid})"><i class="action fa fa-edit "></i></a>
 						<a href="#" onclick="delete_reg(${full.actaid}, 'actaid', 'acta', 'Acta')" class="action fa fa-trash pl-1 remove_list"></i></a>
-						<a target="_blank" href="<?= site_url() ?>recibo/reporte_acta/${full.actaid}" class="action fa fa-file-pdf-o pl-1"></i></a>`
+												<a target="_blank" href="<?= site_url() ?>recibo/reporte_acta/${full.actaid}" class="action fa fa-file-pdf-o pl-1" title="Descargar acta Segelim Perú" aria-label="Descargar acta Segelim Perú"></a>
+												<a target="_blank" href="<?= site_url() ?>recibo/reporte_acta/${full.actaid}/soluciones" class="action pl-2" title="Descargar acta Soluciones Ambientales" aria-label="Descargar acta Soluciones Ambientales"><i class="fa fa-file-pdf-o" aria-hidden="true"></i><small> S</small></a>`
 					}
 				},
 			]

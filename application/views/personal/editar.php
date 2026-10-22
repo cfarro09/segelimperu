@@ -679,6 +679,7 @@
 									<option value="" disabled selected>Seleccione</option>
 									<option value="PRUEBA">PRUEBA</option>
 									<option value="PLANILLA">PLANILLA</option>
+									<option value="EXPRESS">EXPRESS</option>
 								</select>
 							</div>
 							<div id="div_observacion" class="col-lg-12 col-xs-12 mb-2">
@@ -699,12 +700,21 @@
 									<option value="" disabled selected>Seleccione</option>
 									<option value="INACTIVO">INACTIVO</option>
 									<option value="ACTIVO">ACTIVO</option>
+									<option value="REINGRESANTE">REINGRESANTE</option>
 								</select>
 							</div>
 							<div id="div_fecha_vencimiento" class="mb-3 col-lg-6 col-xs-12">
-								<label>Fecha Vencimiento</label>
+								<label>Fecha Vencimiento Contrato</label>
 								<div class="input-group">
 									<input required autocomplete="off" id="fecha_vencimiento" name="fecha_vencimiento" type="text" class="input_detail form-control datepicker-autoclose" placeholder="mm/dd/yyyy" data-date-format="yyyy-mm-dd">
+									<div class="input-group-append"><span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+									</div>
+								</div>
+							</div>
+							<div id="div_fecha_vencimiento_dni" class="mb-3 col-lg-6 col-xs-12">
+								<label>Fecha Vencimiento DNI</label>
+								<div class="input-group">
+									<input autocomplete="off" id="fecha_vencimiento_dni" name="fecha_vencimiento_dni" type="text" class="input_detail form-control datepicker-autoclose" placeholder="mm/dd/yyyy" data-date-format="yyyy-mm-dd">
 									<div class="input-group-append"><span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
 									</div>
 								</div>

@@ -11,10 +11,17 @@ class BoletasUnif extends CI_Controller
 		if (!$this->session->userdata('id_usu')) { //isLogin
 			redirect("login", "refresh");
 		}
+		if ($this->session->userdata('tipo_usu') == "RC") {
+			redirect("recibo/listar", "refresh");
+		}
 		$this->load->library('html');
 		$this->load->library('layout', 'layout');
 		$this->load->model('BoletasUnif_model');
 		$this->load->model('General_model');
+	}
+	private function normalize_nro_boleta($value)
+	{
+		return str_replace('}', '', trim(urldecode((string) $value)));
 	}
 	public function register()
 	{
@@ -37,14 +44,14 @@ class BoletasUnif extends CI_Controller
 		$apellido_mat = html_purify($this->input->post('apellido_mat'));
 		$nombres = html_purify($this->input->post('nombres'));
 		$dni = html_purify($this->input->post('dni'));
-		$nro_boleta = html_purify($this->input->post('nro_boleta'));
+		$nro_boleta = $this->normalize_nro_boleta(html_purify($this->input->post('nro_boleta')));
 		$observacion = html_purify($this->input->post('observacion'));
 		$detalle_boleta = html_purify($this->input->post('data_extra'));
 
 		if (($apellido_pat && $apellido_mat && $nombres && $dni && $fecha && $nro_boleta)   || ($apellido_pat == "ANULADO" || $dni == 0)) {
 			$send_boleta = array(
 				'fecha' => $fecha, 
-				'nro_boleta' => (int) $nro_boleta,
+				'nro_boleta' => $nro_boleta,
 				'nombres' => $nombres,
 				'apellido_mat' => $apellido_mat,
 				'apellido_pat' => $apellido_pat,
@@ -55,6 +62,15 @@ class BoletasUnif extends CI_Controller
 			if ($detalle_boleta) {
 				if (isset($response['success']) && $response['success']) {
 					$detalle_boleta = json_decode($detalle_boleta);
+					if (!$detalle_boleta) {
+						echo json_encode("false");
+						return;
+					}
+					foreach ($detalle_boleta as $detalle) {
+						if (isset($detalle->nro_boleta)) {
+							$detalle->nro_boleta = $this->normalize_nro_boleta($detalle->nro_boleta);
+						}
+					}
 					$response_1 =  $this->BoletasUnif_model->register_detalle_boleta($detalle_boleta);
 					echo json_encode($response_1);
 				}else{
@@ -70,6 +86,7 @@ class BoletasUnif extends CI_Controller
 	public function edit_vol_nro_vol()
 	{
 		$data = html_purify($this->input->post());
+		$data['nro_boleta'] = $this->normalize_nro_boleta($data['nro_boleta']);
 		$where = array('nro_boleta' => $data['nro_boleta']);
 		unset($data['nro_boleta']);
 		$response = $this->General_model->edit_dynamic('user_vol_unif', $where, $data);
@@ -86,6 +103,9 @@ class BoletasUnif extends CI_Controller
 	public function edit_detalle_insert()
 	{
 		$data = html_purify($this->input->post());
+		if (isset($data['nro_boleta'])) {
+			$data['nro_boleta'] = $this->normalize_nro_boleta($data['nro_boleta']);
+		}
 		unset($data['id_detalle']);
 		$response = $this->General_model->insert_dynamic('detalle_vol_unif', $data);
 		echo json_encode($response);
@@ -104,9 +124,15 @@ class BoletasUnif extends CI_Controller
 	public function edit_vol($value = false)
 	{
 		if ($value) {
+			$value = $this->normalize_nro_boleta($value);
 			$data['menu_tables'] =  $this->General_model->get_tables_active();
 			$data['boleta'] =  $this->BoletasUnif_model->get_vol_by_id($value);
 			$data['detalle_boleta'] =  $this->BoletasUnif_model->get_detalle_vol_by_id($value);
+
+			if (!$data['boleta']) {
+				redirect('boletasUnif/listar', 'refresh');
+				return;
+			}
 
 			$this->layout->view('boletasUnif/edit', $data);
 		} else {
