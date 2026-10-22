@@ -72,7 +72,7 @@ $es_rol_almacen = Almacen_acceso::es_operativo($rol_almacen);
 						<i class="mdi mdi-factory"></i><span>Operaciones</span>
 					</a>
 					<ul class="nav-second-level" aria-expanded=false>
-						<li><a href="#">CECON</a></li>
+						<li><a href="<?= site_url('cecon') ?>">CECON</a></li>
 					</ul>
 				</li>
 			<?php endif ?>
