@@ -348,3 +348,20 @@
     .asignacion-editable .asignacion-tabla .asignacion-producto,
     .asignacion-editable .asignacion-tabla .asignacion-producto.tiene-error { grid-template-columns: 88px 22px minmax(0, 1fr); grid-template-areas: "descripcion descripcion descripcion" "unidad marca marca" "precio precio importe" "cantidad cantidad cantidad"; column-gap: 4px; }
 }
+.cecon-barra { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cecon-barra input[type="date"] { width: auto; }
+.cecon-barra-estado { color: #536273; font-size: 13px; margin-left: 6px; }
+.cecon-auto { margin-left: auto; font-size: 13px; color: #374151; display: flex; align-items: center; gap: 6px; }
+.cecon-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 14px 0; }
+.cecon-kpi { display: flex; flex-direction: column; gap: 2px; border: 1px solid #e5e7eb; border-left: 4px solid #9ca3af; border-radius: 8px; padding: 10px 14px; background: #fff; }
+.cecon-kpi-valor { font-size: 30px; line-height: 1.1; font-weight: 700; color: #1f2937; }
+.cecon-kpi-etiqueta { font-weight: 600; color: #374151; }
+.cecon-kpi small { color: #536273; }
+.cecon-kpi .progress { height: 6px; margin: 4px 0 2px; }
+.cecon-kpi-ok { border-left-color: #10b981; }
+.cecon-kpi-alerta { border-left-color: #dc2626; }
+.cecon-kpi-alerta .cecon-kpi-valor { color: #b91c1c; }
+.cecon-fila-alerta > td:first-child { box-shadow: inset 3px 0 0 #dc2626; }
+.cecon-progreso { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.cecon-progreso .progress { flex: 1; height: 8px; }
+.cecon-progreso span { font-size: 12px; min-width: 34px; text-align: right; }

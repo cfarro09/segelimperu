@@ -87,6 +87,12 @@ class Cecon_model extends CI_Model
         return preg_match('#^https://[^\s"\'<>]+$#i', $url) && filter_var($url, FILTER_VALIDATE_URL) ? $url : null;
     }
 
+    public static function hora($utc)
+    {
+        $f = self::fecha($utc);
+        return $f === '' ? '' : substr($f, 11);
+    }
+
     // El API guarda las fechas en UTC (ISO-8601 con "Z"); la aplicación las muestra en hora de Lima.
     public static function fecha($utc)
     {

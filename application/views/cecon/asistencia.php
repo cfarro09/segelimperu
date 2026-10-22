@@ -1,0 +1,99 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+$dias = array('domingo','lunes','martes','miércoles','jueves','viernes','sábado');
+$f = DateTime::createFromFormat('!Y-m-d', $fecha);
+$fecha_texto = $dias[(int)$f->format('w')].' '.$f->format('d/m/Y');
+$es_hoy = $fecha === $hoy;
+$url = function($vista) use ($fecha, $hoy) { return site_url('cecon/asistencia').'?vista='.urlencode($vista).($fecha !== $hoy ? '&fecha='.urlencode($fecha) : ''); };
+?>
+<div class="content"><div class="container-fluid">
+<?php $this->load->view('almacen/cabecera', array('cabecera_titulo'=>'Monitor de asistencia', 'cabecera_solo_lectura'=>true)); ?>
+
+<div class="card-box">
+    <form class="cecon-barra" method="get" action="<?= site_url('cecon/asistencia') ?>">
+        <input type="hidden" name="vista" value="<?= html_escape($vista) ?>">
+        <label for="cecon-fecha" class="mb-0 font-weight-bold">Día</label>
+        <input type="date" id="cecon-fecha" name="fecha" class="form-control form-control-sm" value="<?= html_escape($fecha) ?>" max="<?= html_escape($hoy) ?>" required>
+        <button type="submit" class="btn btn-sm btn-primary">Ver día</button>
+        <?php if(!$es_hoy): ?><a class="btn btn-sm btn-light" href="<?= html_escape(site_url('cecon/asistencia').'?vista='.urlencode($vista)) ?>">Ir a hoy</a><?php endif; ?>
+        <span class="cecon-barra-estado"><?= html_escape(ucfirst($fecha_texto)) ?> · <?= $es_hoy ? 'datos al '.html_escape((new DateTime('now', new DateTimeZone('America/Lima')))->format('H:i')).' (hora de Lima)' : 'día anterior' ?></span>
+        <label class="cecon-auto mb-0"><input type="checkbox" data-cecon-auto<?= $es_hoy ? '' : ' disabled' ?>> Actualizar cada 60 s</label>
+    </form>
+
+    <?php if(!$es_hoy): ?><div class="alert alert-info mt-2 mb-0" role="status">Está viendo un día anterior. Una asistencia puede llegar con retraso si el supervisor la registró sin conexión; en ese caso se cuenta en el día en que se registró.</div><?php endif; ?>
+
+    <div class="cecon-kpis" role="group" aria-label="Resumen del día">
+        <div class="cecon-kpi"><span class="cecon-kpi-valor"><?= (int)$resumen['total'] ?></span><span class="cecon-kpi-etiqueta">Clientes activos</span><small><?= (int)$resumen['sin_supervisor'] ?> sin supervisor asignado</small></div>
+        <div class="cecon-kpi cecon-kpi-ok"><span class="cecon-kpi-valor"><?= (int)$resumen['con'] ?></span><span class="cecon-kpi-etiqueta">Con asistencia</span>
+            <div class="progress" role="progressbar" aria-label="Clientes con asistencia" aria-valuenow="<?= (int)$resumen['porcentaje'] ?>" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar bg-success" style="width: <?= (int)$resumen['porcentaje'] ?>%"></div></div>
+            <small><?= (int)$resumen['porcentaje'] ?> % · <?= (int)$resumen['operarios'] ?> operario<?= $resumen['operarios']===1?'':'s' ?></small></div>
+        <div class="cecon-kpi <?= $resumen['sin']?'cecon-kpi-alerta':'cecon-kpi-ok' ?>"><span class="cecon-kpi-valor"><?= (int)$resumen['sin'] ?></span><span class="cecon-kpi-etiqueta">Sin asistencia</span><small>clientes por registrar</small></div>
+        <div class="cecon-kpi <?= $resumen['supervisores_sin_registrar']?'cecon-kpi-alerta':'cecon-kpi-ok' ?>"><span class="cecon-kpi-valor"><?= (int)$resumen['supervisores_sin_registrar'] ?></span><span class="cecon-kpi-etiqueta">Supervisores sin registrar nada</span><small>de <?= (int)$resumen['supervisores'] ?> supervisores</small></div>
+    </div>
+
+    <div class="pendientes-barra">
+        <nav class="pendientes-vistas" aria-label="Cambiar de vista">
+            <?php foreach(Cecon_asistencia_model::VISTAS as $clave=>$texto): $actual=$vista===$clave; ?>
+            <a class="btn btn-sm <?= $actual?'btn-primary':'btn-light' ?>" href="<?= html_escape($url($clave)) ?>"<?= $actual?' aria-current="page"':'' ?>><?= html_escape($texto) ?> <span class="badge <?= $actual?'badge-light':($clave==='sin'&&$conteos['sin']?'badge-danger':'badge-secondary') ?>"><?= (int)$conteos[$clave] ?></span></a>
+            <?php endforeach; ?>
+        </nav>
+    </div>
+
+    <?php if($vista==='sin' && !$resumen['sin'] && $resumen['total']): ?><div class="alert alert-success" role="status">Todos los clientes activos tienen asistencia registrada este día.</div><?php endif; ?>
+
+    <?php if($vista==='supervisores'): ?>
+    <div class="table-responsive"><table data-almacen-tabla data-filtros-columna class="table table-striped cecon-tabla"><thead><tr>
+        <th data-filtro="lista">Supervisor</th><th>Clientes asignados</th><th>Con asistencia</th><th>Sin asistencia</th><th>Cumplimiento</th><th>Operarios</th><th>Último registro</th><th data-filtro="lista">Estado</th>
+    </tr></thead><tbody>
+    <?php foreach($supervisores as $s): ?>
+    <tr class="<?= $s->asignado && $s->con===0 ? 'cecon-fila-alerta' : '' ?>">
+        <td><?= html_escape($s->nombre) ?></td>
+        <td class="text-right"><?= (int)$s->clientes ?></td>
+        <td class="text-right"><?= (int)$s->con ?></td>
+        <td class="text-right"><?= (int)$s->sin ?></td>
+        <td data-order="<?= (int)$s->porcentaje ?>"><div class="cecon-progreso"><div class="progress"><div class="progress-bar <?= $s->con===0?'bg-danger':($s->sin?'bg-warning':'bg-success') ?>" style="width: <?= (int)$s->porcentaje ?>%"></div></div><span><?= (int)$s->porcentaje ?> %</span></div></td>
+        <td class="text-right"><?= (int)$s->operarios ?></td>
+        <td data-order="<?= html_escape((string)$s->ultimo) ?>"><?= $s->ultimo ? html_escape(Cecon_model::hora($s->ultimo)) : '—' ?></td>
+        <td><span class="badge <?= html_escape($s->estado[1]) ?>"><?= html_escape($s->estado[0]) ?></span></td>
+    </tr>
+    <?php endforeach; ?>
+    </tbody></table></div>
+    <?php else: ?>
+    <div class="table-responsive"><table data-almacen-tabla data-filtros-columna class="table table-striped cecon-tabla"><thead><tr>
+        <th>Código</th><th>Cliente</th><th data-filtro="lista">Supervisor</th><th>Servicio</th><th data-filtro="lista">Estado</th><th>Operarios</th><th>Registros</th><th>Primer registro</th><th>Último registro</th>
+    </tr></thead><tbody>
+    <?php foreach($clientes as $c):
+        if($c->registrada) $estado = array('Registrada', 'badge-success'); elseif(!$c->con_supervisor) $estado = array('Sin supervisor', 'badge-secondary'); else $estado = array('Sin registrar', 'badge-danger');
+        $dias_txt = mb_strtolower(trim($c->dias_servicio)); $dias_txt = mb_strtoupper(mb_substr($dias_txt, 0, 1)).mb_substr($dias_txt, 1);
+        $horario = trim($c->hora_ingreso.($c->hora_ingreso!==''&&$c->hora_salida!==''?' – ':'').$c->hora_salida); ?>
+    <tr class="<?= !$c->registrada ? 'cecon-fila-alerta' : '' ?>">
+        <td><?= html_escape($c->codigo) ?></td>
+        <td><?= html_escape($c->nombre) ?></td>
+        <td><?= $c->con_supervisor ? html_escape($c->supervisor!=='' ? $c->supervisor : 'Supervisor #'.$c->supervisor_id) : '—' ?></td>
+        <td class="pendiente-detalle"><?= trim($c->dias_servicio)!=='' ? html_escape($dias_txt) : '<span class="text-muted">Días sin definir</span>' ?><?php if($horario!==''): ?><div class="small text-muted"><?= html_escape($horario) ?></div><?php endif; ?></td>
+        <td><span class="badge <?= html_escape($estado[1]) ?>"><?= html_escape($estado[0]) ?></span></td>
+        <td class="text-right"><?= $c->registrada ? (int)$c->operarios : '—' ?></td>
+        <td class="text-right"><?= $c->registrada ? (int)$c->envios : '—' ?></td>
+        <td data-order="<?= html_escape((string)$c->primero) ?>"><?= $c->primero ? html_escape(Cecon_model::hora($c->primero)) : '—' ?></td>
+        <td data-order="<?= html_escape((string)$c->ultimo) ?>"><?= $c->ultimo ? html_escape(Cecon_model::hora($c->ultimo)) : '—' ?></td>
+    </tr>
+    <?php endforeach; ?>
+    </tbody></table></div>
+    <?php endif; ?>
+</div>
+</div></div>
+<?php $this->load->view('almacen/datatables'); ?>
+<script>
+jQuery(function($) {
+    var casilla=document.querySelector('[data-cecon-auto]'), clave='cecon-asistencia-auto', temporizador=null;
+    if(!casilla) return;
+    function guardado() { try { return sessionStorage.getItem(clave)==='1'; } catch(e) { return false; } }
+    function guardar(v) { try { sessionStorage.setItem(clave, v?'1':'0'); } catch(e) {} }
+    function ajustar() {
+        clearTimeout(temporizador);
+        if(casilla.checked && !casilla.disabled) temporizador=setTimeout(function() { location.reload(); }, 60000);
+    }
+    casilla.checked=guardado() && !casilla.disabled;
+    casilla.addEventListener('change', function() { guardar(casilla.checked); ajustar(); });
+    ajustar();
+});
+</script>

@@ -30,6 +30,26 @@ class Cecon extends CI_Controller
         ));
     }
 
+    // Monitor de asistencia: qué clientes y supervisores registraron la asistencia del día y cuáles faltan.
+    public function asistencia()
+    {
+        $this->load->model('Cecon_asistencia_model');
+        if (!$this->Cecon_asistencia_model->disponible()) { show_error('El monitor de asistencia aún no está disponible: faltan las tablas de asistencia.', 503); exit; }
+        $hoy = Cecon_asistencia_model::hoy();
+        $fecha = Cecon_asistencia_model::fecha_valida($this->input->get('fecha')) ?: $hoy;
+        if ($fecha > $hoy) $fecha = $hoy;
+        $vista = $this->input->get('vista');
+        $vista = is_string($vista) && isset(Cecon_asistencia_model::VISTAS[$vista]) ? $vista : 'sin';
+        $clientes = $this->Cecon_asistencia_model->clientes($fecha);
+        $supervisores = Cecon_asistencia_model::supervisores($clientes);
+        $resumen = Cecon_asistencia_model::resumen($clientes, $supervisores);
+        $conteos = array('sin' => $resumen['sin'], 'con' => $resumen['con'], 'todos' => $resumen['total'], 'supervisores' => count($supervisores));
+        if ($vista === 'sin') $clientes = array_values(array_filter($clientes, function ($c) { return !$c->registrada; }));
+        elseif ($vista === 'con') $clientes = array_values(array_filter($clientes, function ($c) { return $c->registrada; }));
+        $this->layout->view('cecon/asistencia', array('menu_tables' => $this->General_model->get_tables_active(), 'fecha' => $fecha, 'hoy' => $hoy,
+            'vista' => $vista, 'clientes' => $clientes, 'supervisores' => $supervisores, 'resumen' => $resumen, 'conteos' => $conteos));
+    }
+
     // Detalle de una tarea en JSON, para la ventana de detalle. Las coordenadas y las fotos no viajan en el listado.
     public function detalle($id = '')
     {
