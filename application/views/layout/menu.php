@@ -17,12 +17,14 @@ $es_rol_almacen = Almacen_acceso::es_operativo($rol_almacen);
                     <li><a href="<?= site_url('almacen/asignacion') ?>"><i class="mdi mdi-calendar"></i><span>Asignación mensual</span></a></li>
                     <li><a href="<?= site_url('almacen/asignaciones') ?>"><i class="mdi mdi-format-list-bulleted"></i><span>Asignaciones del mes</span></a></li>
                     <li><a href="<?= site_url('almacen/pendientes') ?>"><i class="mdi mdi-clipboard-alert"></i><span>Pendientes</span></a></li>
+                    <li><a href="<?= site_url('almacen/cargos') ?>"><i class="mdi mdi-file-check"></i><span>Cargos de guías</span></a></li>
                 <?php else: ?>
                     <li><a href="<?= site_url('almacen/productos') ?>"><i class="mdi mdi-package-variant"></i><span>Productos e inventario</span></a></li>
                     <li><a href="<?= site_url('almacen/clientes') ?>"><i class="dripicons-user-group"></i><span>Clientes y presupuestos</span></a></li>
                     <li><a href="<?= site_url('almacen/asignaciones') ?>"><i class="mdi mdi-calendar"></i><span>Consultar asignaciones</span></a></li>
                     <li><a href="<?= site_url('almacen/revision_asignaciones') ?>"><i class="mdi mdi-check-circle"></i><span>Administración de almacén</span></a></li>
                     <li><a href="<?= site_url('almacen/pendientes') ?>"><i class="mdi mdi-clipboard-alert"></i><span>Pendientes</span></a></li>
+                    <li><a href="<?= site_url('almacen/cargos') ?>"><i class="mdi mdi-file-check"></i><span>Cargos de guías</span></a></li>
                 <?php endif; ?>
                 <li class="menu-title">Mi cuenta</li>
                 <li><a href="<?= site_url('login/logout') ?>"><i class="mdi mdi-logout"></i><span>Cerrar sesión</span></a></li>
@@ -46,6 +48,7 @@ $es_rol_almacen = Almacen_acceso::es_operativo($rol_almacen);
 				<li><a href="<?= site_url('almacen/asignacion') ?>"><i class="mdi mdi-calendar"></i><span>Asignación mensual</span></a></li>
 				<li><a href="<?= site_url('almacen/revision_asignaciones') ?>"><i class="mdi mdi-check-circle"></i><span>Administración de almacén</span></a></li>
 				<li><a href="<?= site_url('almacen/pendientes') ?>"><i class="mdi mdi-clipboard-alert"></i><span>Pendientes de almacén</span></a></li>
+				<li><a href="<?= site_url('almacen/cargos') ?>"><i class="mdi mdi-file-check"></i><span>Cargos de guías</span></a></li>
 				<li>
 					<a href="javascript: void(0);">
 						<i class="dripicons-user-group"></i><?= $this->session->userdata('count_suscribers') ?  '<span class="badge badge-warning pull-right">' . $this->session->userdata('count_suscribers') . '</span>' : "" ?><span>Usuarios</span>

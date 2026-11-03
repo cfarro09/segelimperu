@@ -1,0 +1,45 @@
+/* Marco común: barra superior, logo del menú lateral y portada. */
+.topbar .topbar-left { background: #313a46; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.topbar .topbar-left .logo { display: flex; align-items: center; justify-content: center; height: 70px; line-height: normal; }
+.topbar .topbar-left .logo span { display: flex; align-items: center; }
+.marco-logo { display: block; width: 196px; max-width: calc(100% - 24px); height: auto; }
+.marco-logo-sm { display: block; width: 40px; height: 40px; margin: 0 auto; }
+.enlarged #wrapper .topbar .topbar-left .logo i { line-height: normal; }
+
+.navbar-custom .marco-usuario { display: flex; align-items: center; gap: 10px; height: 70px; line-height: normal; padding: 0 6px; color: #fff; }
+.navbar-custom .marco-usuario:hover, .navbar-custom .marco-usuario:focus { color: #fff; text-decoration: none; }
+.marco-avatar { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: #fff; color: #33558c; font-weight: 700; font-size: 14px; letter-spacing: .5px; flex: 0 0 auto; }
+.marco-usuario-texto { display: flex; flex-direction: column; text-align: left; line-height: 1.2; max-width: 220px; }
+.marco-usuario-texto strong { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.marco-usuario-texto small { font-size: 12px; opacity: .85; }
+.profile-dropdown .noti-title h5 small { margin-top: 2px; color: #6c757d; }
+
+/* Colores Segelim: azul del logo como color principal, rojo como acento. */
+.navbar-custom { box-shadow: inset 0 -3px 0 #fc695d; }
+.navbar-custom .button-menu-mobile { height: 67px; background: transparent; }
+.navbar-custom .button-menu-mobile:hover { background: rgba(255, 255, 255, .12); }
+
+/* Portada */
+.content-page .inicio { padding-top: 24px; }
+.inicio-saludo { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.inicio-saludo h2 { margin: 0; font-size: 24px; font-weight: 600; color: #313a46; }
+.inicio-saludo p { margin: 2px 0 0; color: #536273; }
+.inicio-saludo img { height: 44px; width: auto; }
+.inicio h5.inicio-titulo { margin: 4px 0 10px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: #6b7a8a; }
+.inicio-indicadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.inicio-indicador { display: flex; align-items: center; gap: 14px; padding: 16px; background: #fff; border: 1px solid #e3e8ee; border-radius: 8px; color: #374151; transition: box-shadow .15s, border-color .15s; }
+.inicio-indicador:hover, .inicio-indicador:focus { color: #374151; text-decoration: none; border-color: #b9c6d4; box-shadow: 0 2px 8px rgba(49, 58, 70, .08); }
+.inicio-indicador .mdi { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; font-size: 24px; flex: 0 0 auto; }
+.inicio-indicador strong { display: block; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.inicio-indicador span { display: block; font-size: 13px; color: #536273; }
+.inicio-indicador small { display: block; font-size: 12px; color: #c0392b; font-weight: 600; }
+.inicio-indicador.en-cero strong { color: #8a97a5; }
+.tono-azul .mdi { background: #e6eef8; color: #225d97; }
+.tono-ambar .mdi { background: #fdf3e1; color: #b26a00; }
+.tono-rojo .mdi { background: #fce8e6; color: #c0392b; }
+.tono-verde .mdi { background: #eef1f5; color: #536273; }
+.inicio-accesos { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.inicio-acceso { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #fff; border: 1px solid #e3e8ee; border-radius: 8px; color: #374151; font-weight: 500; }
+.inicio-acceso:hover, .inicio-acceso:focus { color: #225d97; text-decoration: none; border-color: #b9c6d4; }
+.inicio-acceso .mdi { font-size: 20px; color: #225d97; }
+@media (max-width: 575px) { .inicio-saludo img { display: none; } .inicio-saludo h2 { font-size: 20px; } }

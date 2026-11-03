@@ -7,12 +7,19 @@ ob_end_clean();
 
 /**
  * Guía de traslado - almacén (formato de la empresa) para cada despacho.
- * Transporte, conductor, peso y comprobante quedan en blanco para llenarse a mano.
+ * La unidad de transporte (marca y placa) va impresa; conductor, peso y comprobante quedan en blanco para llenarse a mano.
  */
 class Almacen_guia_pdf extends FPDF
 {
     const RUC='20524055130';
     const DIRECCION='Jr. Enrique Barrón N° 1323 - Urb. Santa Beatriz, Lima - Lima';
+    const PARTIDA='SEGELIMPERU S.A.C.';
+    // Alto (mm) de los recuadros de firma: deben entrar el sello y la firma. Usa el espacio libre hasta el máximo.
+    const ALTO_FIRMAS=55;
+    const ALTO_FIRMAS_MIN=40;
+    // Unidad de transporte propia que hace los traslados del almacén.
+    const VEHICULO_MARCA='BAIC';
+    const VEHICULO_PLACA='H2G 360';
     const MOTIVOS=array(1=>'Venta',2=>'Venta sujeta a confirmación',3=>'Compra',4=>'Consignación',5=>'Devolución',6=>'Traslado establec. misma empresa',7=>'Traslado de zona primaria',8=>'Traslado para transformación',9=>'Recojo de bienes transportados',10=>'Traslado por emisor itinerante',11=>'Importación',12=>'Exportación',13=>'Otros');
     private $despacho;
     private $azul=array(35,52,140);
@@ -32,15 +39,17 @@ class Almacen_guia_pdf extends FPDF
         $this->SetTitle($this->texto('Guía de traslado - almacén '.Almacen_despachos_model::numero($despacho)));
         $this->SetAuthor($this->texto('SEGELIMPERÚ S.A.C.'));
         $this->AddPage();
+        $categoria=null;
         foreach ($detalles as $d) {
+            if ($d->categoria!==$categoria) { $categoria=$d->categoria; $this->subtitulo(isset(Almacen_model::CATEGORIAS[$categoria])?Almacen_model::CATEGORIAS[$categoria]:'Otros'); }
             $descripcion=$d->descripcion.($d->marca!==''?' - '.$d->marca:'');
             $this->fila(array($d->codigo,$descripcion,number_format($d->cantidad,3,'.',','),$d->unidad,''));
         }
         // Cierre del cuerpo de la tabla hasta el bloque final.
         $fin=max($this->GetY(),150);
-        if ($fin+88>$this->PageBreakTrigger) { $this->columnas($this->GetY(),$this->GetY()); $this->AddPage(); $fin=$this->GetY(); }
+        if ($fin+3+39+self::ALTO_FIRMAS_MIN>$this->PageBreakTrigger) { $this->columnas($this->GetY(),$this->GetY()); $this->AddPage(); $fin=$this->GetY(); }
         $this->columnas($this->GetY(),$fin);
-        $this->bloque_final($fin+3);
+        $this->bloque_final($fin+3,min(self::ALTO_FIRMAS,$this->PageBreakTrigger-($fin+3+39)));
         return $this->Output('S');
     }
     private function etiqueta($x,$y,$texto)
@@ -88,11 +97,11 @@ class Almacen_guia_pdf extends FPDF
         $this->SetDrawColor($this->azul[0],$this->azul[1],$this->azul[2]); $this->SetLineWidth(0.4);
         $this->RoundedRect(10,45,94,37,2); $this->RoundedRect(106,45,94,37,2);
         // Partida, fecha y transporte (en blanco)
-        $x=$this->etiqueta(12,47,'PUNTO DE PARTIDA'); $this->campo($x,47,'',self::DIRECCION,102-$x);
+        $x=$this->etiqueta(12,47,'PUNTO DE PARTIDA'); $this->campo($x,47,'',self::PARTIDA,102-$x);
         $x=$this->etiqueta(12,53,'TRASLADO'); $this->campo($x,53,'Fecha de inicio:',date('d/m/Y',strtotime($d->creado_en)),68-$x);
         $this->campo(70,53,'Costo mín. S/','',32);
-        $x=$this->etiqueta(12,60,'UNIDAD DE TRANSPORTE Y CONDUCTOR'); $this->campo($x,60,'Marca:','',102-$x);
-        $this->campo(12,66,'Placa:','',28); $this->campo(41,66,'N° Cons. Insc.:','',30); $this->campo(72,66,'N° Lic.:','',30);
+        $x=$this->etiqueta(12,60,'UNIDAD DE TRANSPORTE Y CONDUCTOR'); $this->campo($x,60,'Marca:',self::VEHICULO_MARCA,102-$x);
+        $this->campo(12,66,'Placa:',self::VEHICULO_PLACA,28); $this->campo(41,66,'N° Cons. Insc.:','',30); $this->campo(72,66,'N° Lic.:','',30);
         $this->campo(12,73,'Nombre del conductor:','',90);
         // Llegada, destinatario y empresa de transportes (en blanco)
         $x=$this->etiqueta(108,47,'PUNTO DE LLEGADA'); $this->campo($x,47,'',$d->cliente_direccion,198-$x);
@@ -128,7 +137,7 @@ class Almacen_guia_pdf extends FPDF
         $this->columnas($this->GetY(),$this->GetY());
         return true;
     }
-    private function bloque_final($y)
+    private function bloque_final($y,$alto)
     {
         $d=$this->despacho;
         $this->SetDrawColor($this->azul[0],$this->azul[1],$this->azul[2]); $this->SetLineWidth(0.4);
@@ -149,12 +158,15 @@ class Almacen_guia_pdf extends FPDF
         }
         $this->SetXY(136,$y+19); $this->SetFont('Arial','B',7); $this->SetTextColor(20);
         $this->MultiCell(60,3.4,$this->texto('Entrega de materiales · Asignación '.$d->periodo.' #'.$d->asignacion_id),0,'L');
-        // Firmas
-        $y+=40; $this->SetDrawColor(60); $this->SetLineWidth(0.3);
-        $this->Line(20,$y,95,$y); $this->Line(115,$y,190,$y);
-        $this->SetTextColor($this->azul[0],$this->azul[1],$this->azul[2]); $this->SetFont('Arial','B',8);
-        $this->SetXY(20,$y+1); $this->Cell(75,4,$this->texto('SEGELIMPERÚ S.A.C. · ALMACÉN'),0,2,'C'); $this->SetFont('Arial','',7); $this->Cell(75,4,'FIRMA',0,0,'C');
-        $this->SetFont('Arial','B',8); $this->SetXY(115,$y+1); $this->Cell(75,4,$this->texto('RECIBÍ CONFORME'),0,2,'C'); $this->SetFont('Arial','',7); $this->Cell(75,4,'NOMBRE, DNI Y FIRMA',0,0,'C');
+        // Firmas: recuadros altos para que entren el sello y la firma.
+        $y+=30;
+        foreach (array(array(10,'SEGELIMPERÚ S.A.C. · ALMACÉN','SELLO Y FIRMA'),array(107,'RECIBÍ CONFORME','SELLO, NOMBRE, DNI Y FIRMA')) as $c) {
+            list($x,$titulo,$detalle)=$c;
+            $this->SetDrawColor($this->azul[0],$this->azul[1],$this->azul[2]); $this->SetLineWidth(0.4); $this->RoundedRect($x,$y,93,$alto,1.5);
+            $this->SetDrawColor(60); $this->SetLineWidth(0.3); $this->Line($x+8,$y+$alto-10,$x+85,$y+$alto-10);
+            $this->SetTextColor($this->azul[0],$this->azul[1],$this->azul[2]); $this->SetFont('Arial','B',8);
+            $this->SetXY($x,$y+$alto-9); $this->Cell(93,4,$this->texto($titulo),0,2,'C'); $this->SetFont('Arial','',7); $this->Cell(93,4,$this->texto($detalle),0,0,'C');
+        }
     }
     public function Footer()
     {
@@ -195,6 +207,15 @@ class Almacen_guia_pdf extends FPDF
             else $i++;
         }
         return $lineas;
+    }
+    // Subtítulo de categoría dentro de la tabla (Materiales, Implementos…).
+    private function subtitulo($texto)
+    {
+        if ($this->GetY()+6+6.5>$this->PageBreakTrigger) { $this->columnas($this->GetY(),$this->GetY()); $this->AddPage(); }
+        $y=$this->GetY(); $this->SetFillColor(232,236,246); $this->Rect(10.2,$y+0.6,189.6,5,'F');
+        $this->SetXY(12,$y+0.8); $this->SetFont('Arial','B',8); $this->SetTextColor($this->azul[0],$this->azul[1],$this->azul[2]);
+        $this->Cell(120,4.6,$this->texto(mb_strtoupper($texto,'UTF-8')),0,0);
+        $this->SetFont('Arial','',8.5); $this->SetTextColor(20); $this->SetXY(10,$y+6);
     }
     private function fila($campos)
     {

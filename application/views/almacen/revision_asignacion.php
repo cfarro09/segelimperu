@@ -24,6 +24,7 @@ if ($editable) array_splice($acciones, 1, 0, array(array('texto'=>'Guardar','ari
             <button type="submit" class="btn btn-sm btn-success" name="decision" value="aprobado" data-aprobar><i class="mdi mdi-check" aria-hidden="true"></i> Aprobar</button>
             <?= form_close() ?>
             <?php endif; ?>
+            <?php if(!empty($puede_anular) && empty($despacho)): ?><button type="button" class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#modal-anular"><i class="mdi mdi-undo-variant" aria-hidden="true"></i> Anular aprobación</button><?php endif; ?>
             <div data-despacho-acciones><?php $this->load->view('almacen/despacho_acciones',array('asignacion'=>$asignacion,'despacho'=>$despacho ?? null)); ?></div>
         </div>
     </div>
@@ -71,6 +72,16 @@ if ($editable) array_splice($acciones, 1, 0, array(array('texto'=>'Guardar','ari
     <div class="modal-body"><p class="small text-muted">La asignación vuelve al supervisor para que la corrija. Indica qué debe ajustar.</p>
         <label for="comentario">Motivo del rechazo</label><textarea id="comentario" name="comentario" form="form-decision-revision" class="form-control" maxlength="1000" rows="3"></textarea></div>
     <div class="modal-footer"><button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button><button type="submit" form="form-decision-revision" class="btn btn-danger" name="decision" value="rechazado">Rechazar asignación</button></div>
+</div></div></div>
+<?php endif; ?>
+<?php if(!empty($puede_anular) && empty($despacho)): ?>
+<div class="modal fade" id="modal-anular" tabindex="-1" role="dialog" aria-labelledby="modal-anular-titulo" aria-hidden="true"><div class="modal-dialog modal-dialog-centered" role="document"><div class="modal-content">
+    <?= form_open('almacen/anular_asignacion') ?><input type="hidden" name="token" value="<?= html_escape($token) ?>"><input type="hidden" name="id" value="<?= (int)$asignacion->id ?>"><input type="hidden" name="revision" value="<?= (int)$asignacion->revision ?>">
+    <div class="modal-header"><h5 class="modal-title" id="modal-anular-titulo">Anular aprobación</h5><button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button></div>
+    <div class="modal-body"><p class="small text-muted">La asignación vuelve al supervisor como <strong>Necesita corrección</strong> y sale de su orden de compra (si la orden ya se recibió, la compra queda como historial). El supervisor podrá corregirla y enviarla otra vez.</p>
+        <label for="motivo-anulacion">Motivo de la anulación</label><textarea id="motivo-anulacion" name="motivo" class="form-control" rows="3" maxlength="900" required placeholder="Ej.: asignación de prueba del piloto; cargar la real"></textarea></div>
+    <div class="modal-footer"><button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-danger">Anular aprobación</button></div>
+    <?= form_close() ?>
 </div></div></div>
 <?php endif; ?>
 <?php $this->load->view('almacen/formulario_modal'); ?>

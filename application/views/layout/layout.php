@@ -8,7 +8,7 @@
 
     <meta charset="utf-8" />
 
-    <title><?= $es_almacen ? 'Almacén · Segelim Perú' : 'Adminox - Responsive Web App Kit' ?></title>
+    <title><?= $es_almacen ? 'Almacén · Segelim Perú' : 'Segelim Perú' ?></title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -68,8 +68,9 @@
 
     <link href="<?=base_url()?>assets/css/metismenu.min.css" rel="stylesheet" type="text/css" />
 
-    <link href="<?=base_url()?>assets/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="<?=base_url()?>assets/css/style.css?v=<?= filemtime(FCPATH.'assets/css/style.css') ?>" rel="stylesheet" type="text/css" />
 
+<link href="<?= base_url() ?>assets/css/marco.css?v=<?= filemtime(FCPATH.'assets/css/marco.css') ?>" rel="stylesheet">
 <link href="<?= base_url() ?>assets/css/datatables-segelim.css?v=<?= filemtime(FCPATH.'assets/css/datatables-segelim.css') ?>" rel="stylesheet">
 <?php if ($usa_estilo_almacen): ?>
     <link href="<?= base_url() ?>assets/css/almacen.css?v=<?= filemtime(FCPATH.'assets/css/almacen.css') ?>" rel="stylesheet" type="text/css" />

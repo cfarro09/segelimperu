@@ -14,7 +14,7 @@ $clase_estado=array('pendiente'=>'badge-warning','en_proceso'=>'badge-info','ate
     <td class="almacen-celda-acciones"><div class="almacen-acciones-iconos">
         <a class="btn btn-light" href="<?= site_url('almacen/pendiente/'.$p->id) ?>" data-almacen-formulario="pendiente" data-editor-titulo="Editar pendiente" data-almacen-tooltip title="Editar pendiente" aria-label="Editar pendiente" aria-haspopup="dialog"><i class="mdi mdi-pencil" aria-hidden="true"></i></a>
         <?php if(!empty($puede_gestionar) && $abierto): ?>
-        <?= form_open('almacen/atender_pendiente',array('class'=>'d-inline','data-pendiente-atender'=>'1','data-sede'=>$p->sede,'data-detalle'=>mb_substr($p->detalle,0,160))) ?><input type="hidden" name="token" value="<?= html_escape($token) ?>"><input type="hidden" name="id" value="<?= (int)$p->id ?>"><input type="hidden" name="vista" value="<?= html_escape($vista ?? 'abiertos') ?>"><button class="btn btn-light text-success" data-almacen-tooltip title="Marcar atendido" aria-label="Marcar atendido"><i class="mdi mdi-check-bold" aria-hidden="true"></i></button><?= form_close() ?>
+        <?= form_open('almacen/atender_pendiente',array('class'=>'d-inline','data-pendiente-atender'=>'1','data-sede'=>$p->sede,'data-detalle'=>mb_substr($p->detalle,0,160))) ?><input type="hidden" name="token" value="<?= html_escape($token) ?>"><input type="hidden" name="id" value="<?= (int)$p->id ?>"><input type="hidden" name="vista" value="<?= html_escape($vista ?? 'abiertos') ?>"><button class="btn btn-light text-success" data-almacen-tooltip title="Marcar atendido" aria-label="Marcar atendido"><i class="mdi mdi-check" aria-hidden="true"></i></button><?= form_close() ?>
         <?php endif; ?>
     </div></td>
 </tr>

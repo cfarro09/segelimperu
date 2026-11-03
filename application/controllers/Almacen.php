@@ -359,6 +359,17 @@ class Almacen extends CI_Controller
         $this->pagina('revision_asignaciones',$data);
     }
 
+    public function anular_asignacion()
+    {
+        $this->validar_post(); $this->cargar_clientes(); $this->load->model('Almacen_compras_model');
+        if (!in_array($this->session->userdata('tipo_usu'), array('AD','SA'), true)) { show_error('Solo Administración puede anular una asignación aprobada.', 403); return; }
+        $id = $this->input->post('id'); $revision = $this->input->post('revision');
+        foreach (array($id, $revision) as $v) if (!is_string($v) || !ctype_digit($v) || strlen($v) > 9) { show_error('Asignación inválida.', 400); return; }
+        $r = $this->Almacen_asignaciones_model->anular((int) $id, (int) $revision, $this->input->post('motivo'), (int) $this->session->userdata('id_usu'));
+        $this->session->set_flashdata($r === true ? 'almacen_ok' : 'almacen_error', $r === true ? 'Aprobación anulada. La asignación volvió al supervisor para corregirla.' : $r);
+        redirect('almacen/revisar_asignacion/'.(int) $id);
+    }
+
     public function revisar_asignacion($id)
     {
         $this->cargar_clientes(); $a=$this->Almacen_asignaciones_model->obtener((int)$id);
@@ -373,6 +384,7 @@ class Almacen extends CI_Controller
         $permiso=Almacen_acceso::permite($this->session->userdata('tipo_usu'),'almacen','guardar_revision_asignacion');
         $this->output->set_header('Cache-Control: private, no-store');
         $this->pagina('revision_asignacion',array('asignacion'=>$a,'despacho'=>$this->Almacen_despachos_model->de_asignacion($a->id),'cliente'=>$this->Almacen_clientes_model->obtener($a->cliente_id),'detalles'=>$this->Almacen_asignaciones_model->detalles($a->id),'saldo_anterior'=>$this->Almacen_asignaciones_model->saldo_anterior($a->cliente_id,$a->periodo),'eventos'=>$this->Almacen_asignaciones_model->eventos($a->id),
+            'puede_anular'=>in_array($this->session->userdata('tipo_usu'),array('AD','SA'),true) && $a->estado==='aprobado',
             'puede_ajustar_cantidades'=>$permiso && $restriccion==='', 'restriccion_ajuste'=>$restriccion,'errores'=>$errores,'cantidades_revision'=>$cantidades,'revision_formulario'=>$revision===null?$a->revision:$revision));
     }
 
@@ -488,7 +500,36 @@ class Almacen extends CI_Controller
     }
     private function datos_compra($compra)
     {
-        return array('compra'=>$compra,'puede_aprobar_compra'=>$this->puede_aprobar_compra(),'aprobador'=>$this->Almacen_compras_model->nombre_usuario($compra->aprobado_por ?? 0),'nuevas_compra'=>$this->Almacen_compras_model->nuevas($compra->periodo),'detalles'=>$this->Almacen_compras_model->detalles($compra->id),'asignaciones'=>$this->Almacen_compras_model->asignaciones($compra->id),'cantidades_clientes'=>$this->Almacen_compras_model->cantidades_por_cliente($compra->id));
+        return array('compra'=>$compra,'productos_compra'=>$compra->tipo==='manual'&&$compra->estado==='borrador'?$this->Almacen_model->productos('', '1'):array(),'puede_aprobar_compra'=>$this->puede_aprobar_compra(),'aprobador'=>$this->Almacen_compras_model->nombre_usuario($compra->aprobado_por ?? 0),'nuevas_compra'=>$this->Almacen_compras_model->nuevas($compra->periodo),'detalles'=>$this->Almacen_compras_model->detalles($compra->id),'asignaciones'=>$this->Almacen_compras_model->asignaciones($compra->id),'cantidades_clientes'=>$this->Almacen_compras_model->cantidades_por_cliente($compra->id));
+    }
+    public function crear_compra_manual()
+    {
+        $this->validar_post(); $this->load->model('Almacen_compras_model');
+        $periodo=$this->input->post('periodo'); $descripcion=trim((string)$this->input->post('descripcion'));
+        if(!$this->periodo_valido($periodo)){show_error('Período inválido.',400);return;}
+        if($descripcion===''||mb_strlen($descripcion)>150){$this->session->set_flashdata('almacen_error','Indica una descripción para la orden (hasta 150 caracteres).');redirect($this->ruta_compra($periodo));return;}
+        $r=$this->Almacen_compras_model->crear_manual($periodo,$descripcion,(int)$this->session->userdata('id_usu'));
+        if(isset($r['error'])){$this->session->set_flashdata('almacen_error',$r['error']);redirect($this->ruta_compra($periodo));return;}
+        $o=$this->Almacen_compras_model->obtener($r['id']);
+        $this->session->set_flashdata('almacen_ok','Orden manual '.Almacen_compras_model::codigo($o).' creada. Agrega los productos, cantidades y precios.');
+        redirect($this->ruta_compra($periodo,$r['id']));
+    }
+    public function linea_compra()
+    {
+        $this->validar_post(); $this->load->model('Almacen_compras_model');
+        $id=$this->input->post('id'); $producto=$this->input->post('producto_id'); $accion=$this->input->post('accion');
+        $cantidad=$this->input->post('cantidad'); $precio=$this->input->post('precio');
+        foreach(array($id,$producto) as $v) if(!is_string($v)||!ctype_digit($v)||strlen($v)>9){show_error('Solicitud inválida.',400);return;}
+        if(!in_array($accion,array('agregar','quitar'),true)){show_error('Acción inválida.',400);return;}
+        $o=$this->Almacen_compras_model->obtener((int)$id); if(!$o){show_404();return;}
+        if($accion==='agregar'){
+            $cantidad=is_string($cantidad)?str_replace(',','.',trim($cantidad)):''; $precio=is_string($precio)?str_replace(',','.',trim($precio)):'';
+            if(!$this->decimal($cantidad,3)||(float)$cantidad<=0) $r='Indica una cantidad mayor a cero.';
+            elseif($precio!==''&&!$this->decimal($precio,2)) $r='Revisa el precio: monto positivo con hasta 2 decimales.';
+        }
+        if(!isset($r)) $r=$this->Almacen_compras_model->linea_manual((int)$id,$accion,(int)$producto,$cantidad,$precio,(int)$this->session->userdata('id_usu'));
+        $this->session->set_flashdata($r===true?'almacen_ok':'almacen_error',$r===true?($accion==='agregar'?'Producto agregado a la orden.':'Producto quitado de la orden.'):$r);
+        redirect($this->ruta_compra($o->periodo,$o->id));
     }
     public function guardar_compra()
     {
@@ -500,8 +541,9 @@ class Almacen extends CI_Controller
         if(in_array($accion,array('aprobar','reabrir'),true) && !$this->puede_aprobar_compra()){show_error('Solo Administración puede aprobar o reabrir una orden de compra.',403);return;}
         $cantidades=$this->input->post('cantidades');$proveedor=$this->input->post('proveedor');$observaciones=$this->input->post('observaciones');
         $sin_stock_previo=$this->input->post('sin_stock_previo'); if(!is_array($sin_stock_previo)) $sin_stock_previo=array();
+        $precios=$this->input->post('precios'); if(!is_array($precios)) $precios=array();
         if(!is_array($cantidades)||!is_string($proveedor)||mb_strlen($proveedor)>200||!is_string($observaciones)||mb_strlen($observaciones)>1000)$r='Revisa las cantidades, proveedor y observaciones.';
-        else $r=$this->Almacen_compras_model->guardar((int)$id,(int)$revision,$cantidades,trim($proveedor),trim($observaciones),(int)$this->session->userdata('id_usu'),$accion,$sin_stock_previo);
+        else $r=$this->Almacen_compras_model->guardar((int)$id,(int)$revision,$cantidades,trim($proveedor),trim($observaciones),(int)$this->session->userdata('id_usu'),$accion,$sin_stock_previo,$precios);
         $mensajes=array('guardar'=>'Cantidades de compra guardadas.','aprobar'=>'Orden aprobada. Almacén ya puede confirmar la recepción.','recibir'=>'Recepción registrada. El stock fue actualizado.','reabrir'=>'Orden reabierta como borrador.');
         $this->session->set_flashdata($r===true?'almacen_ok':'almacen_error',$r===true?$mensajes[$accion]:$r);
         $compra=$this->Almacen_compras_model->obtener((int)$id);
@@ -528,7 +570,7 @@ class Almacen extends CI_Controller
         }
         $productos = array();
         // Los venenos (fumigación) no forman parte de la asignación mensual de materiales.
-        foreach ($this->Almacen_model->productos('', '1') as $p) { if ($p->categoria === 'VENENOS') continue; $p->cantidad = 0; $productos[$p->id] = $p; }
+        foreach ($this->Almacen_model->productos('', '1') as $p) { if (in_array($p->categoria, array('VENENOS', 'UNIFORMES'), true)) continue; $p->cantidad = 0; $productos[$p->id] = $p; }
         if ($asignacion && $asignacion->id) foreach ($this->Almacen_asignaciones_model->detalles($asignacion->id) as $d) {
             $p = clone $d; $p->id = $d->producto_id;
             $productos[$p->id] = $p;
@@ -640,6 +682,99 @@ class Almacen extends CI_Controller
         $this->load->library('Almacen_excel');
         $clientes=$this->input->get('vista')==='clientes';
         $this->descargar_excel('orden-'.Almacen_compras_model::codigo($o).($clientes?'-por-cliente':'').'.xlsx', $this->almacen_excel->compra($o,$this->Almacen_compras_model->detalles($o->id),$this->Almacen_compras_model->asignaciones($o->id),$clientes?$this->Almacen_compras_model->cantidades_por_cliente($o->id):null));
+    }
+
+    // ---------------- Cargos de guías ----------------
+    private function puede_verificar_cargos() { return in_array($this->session->userdata('tipo_usu'), array('AD','SA','AL'), true); }
+    private function cargos_supervisor() { return $this->session->userdata('tipo_usu') === 'SP' ? (int) $this->session->userdata('id_usu') : null; }
+    private function ruta_cargos() { $r = $this->input->post('volver'); return is_string($r) && preg_match('#^almacen/cargos(\?[a-z_=&0-9-]*)?$#', $r) ? $r : 'almacen/cargos'; }
+
+    public function cargos()
+    {
+        $this->load->model('Almacen_cargos_model'); $this->load->model('Almacen_clientes_model');
+        $vista = $this->input->get('vista'); $vista = isset(Almacen_cargos_model::VISTAS[$vista]) ? $vista : 'pendientes';
+        $periodo = $this->input->get('periodo'); $periodo = is_string($periodo) && $this->periodo_valido($periodo) ? $periodo : '';
+        $sup = $this->cargos_supervisor();
+        $this->pagina('cargos', array('cargos'=>$this->Almacen_cargos_model->listar($vista, $periodo, $sup), 'conteos'=>$this->Almacen_cargos_model->conteos($periodo, $sup),
+            'vista'=>$vista, 'periodo'=>$periodo, 'puede_verificar'=>$this->puede_verificar_cargos(), 'puede_desverificar'=>in_array($this->session->userdata('tipo_usu'), array('AD','SA'), true),
+            'clientes'=>$this->Almacen_clientes_model->listar('', '1', null, 0, $sup)));
+    }
+
+    // Valida el archivo subido (tipo real por contenido, no por extensión) y lo guarda fuera de la carpeta pública.
+    private function recibir_archivo_cargo()
+    {
+        $f = $_FILES['archivo'] ?? null;
+        if (!$f || !is_array($f) || ($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) return array('error'=>'Adjunta la foto o el PDF de la guía firmada.');
+        if (in_array($f['error'], array(UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE), true)) return array('error'=>'El archivo supera 2 MB. Si es PDF, redúcelo; las fotos se comprimen solas.');
+        if ($f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) return array('error'=>'No se pudo recibir el archivo. Intenta de nuevo.');
+        $tipo = (new finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']);
+        if (!isset(Almacen_cargos_model::TIPOS[$tipo])) return array('error'=>'Formato no admitido. Sube una foto (JPG, PNG, WEBP) o un PDF.');
+        $nombre = bin2hex(random_bytes(16)).'.'.Almacen_cargos_model::TIPOS[$tipo];
+        if (!move_uploaded_file($f['tmp_name'], Almacen_cargos_model::carpeta().$nombre)) return array('error'=>'No se pudo guardar el archivo en el servidor.');
+        return array('archivo'=>$nombre, 'tipo'=>$tipo);
+    }
+
+    public function subir_cargo()
+    {
+        $this->validar_post(); $this->load->model('Almacen_cargos_model');
+        $id = $this->input->post('id');
+        if (!is_string($id) || !ctype_digit($id)) { show_error('Cargo inválido.', 400); return; }
+        $k = $this->Almacen_cargos_model->obtener((int) $id);
+        if (!$this->Almacen_cargos_model->visible($k, $this->cargos_supervisor())) { show_404(); return; }
+        $subido = $this->recibir_archivo_cargo();
+        if (isset($subido['error'])) { $this->session->set_flashdata('almacen_error', $subido['error']); redirect($this->ruta_cargos()); return; }
+        $r = $this->Almacen_cargos_model->adjuntar((int) $id, $subido['archivo'], $subido['tipo'], (int) $this->session->userdata('id_usu'));
+        if (isset($r['error'])) { @unlink(Almacen_cargos_model::carpeta().$subido['archivo']); $this->session->set_flashdata('almacen_error', $r['error']); redirect($this->ruta_cargos()); return; }
+        if ($r['anterior']) @unlink(Almacen_cargos_model::carpeta().basename($r['anterior']));
+        $this->session->set_flashdata('almacen_ok', 'Cargo de la guía '.$k->numero_guia.' subido. Queda por verificar.');
+        redirect($this->ruta_cargos());
+    }
+
+    public function registrar_cargo()
+    {
+        $this->validar_post(); $this->load->model('Almacen_cargos_model');
+        $sede = trim((string) $this->input->post('sede')); $guia = strtoupper(trim((string) $this->input->post('numero_guia')));
+        $fecha = (string) $this->input->post('fecha_guia'); $obs = trim((string) $this->input->post('observaciones'));
+        $errores = array();
+        if ($sede === '' || mb_strlen($sede) > 150) $errores[] = 'Indica el cliente o sede.';
+        if (!preg_match('/^\d{3,4}-\d{1,8}$/D', $guia)) $errores[] = 'El número de guía debe tener el formato serie-número (ej. 0001-003499).';
+        elseif ($this->Almacen_cargos_model->guia_existe($guia)) $errores[] = 'La guía '.$guia.' ya está registrada.';
+        $f = DateTime::createFromFormat('!Y-m-d', $fecha);
+        if (!$f || $f->format('Y-m-d') !== $fecha || $fecha > date('Y-m-d')) $errores[] = 'Indica la fecha de la guía (no futura).';
+        if (mb_strlen($obs) > 500) $errores[] = 'Las observaciones admiten hasta 500 caracteres.';
+        if (!$errores) {
+            $subido = $this->recibir_archivo_cargo();
+            if (isset($subido['error'])) $errores[] = $subido['error'];
+        }
+        if ($errores) { $this->session->set_flashdata('almacen_error', implode(' ', $errores)); redirect($this->ruta_cargos()); return; }
+        $usuario = (int) $this->session->userdata('id_usu');
+        $id = $this->Almacen_cargos_model->registrar_manual(array('cliente_id'=>$this->Almacen_cargos_model->cliente_por_nombre($sede), 'sede'=>$sede, 'numero_guia'=>$guia, 'fecha_guia'=>$fecha,
+            'archivo'=>$subido['archivo'], 'archivo_tipo'=>$subido['tipo'], 'subido_por'=>$usuario, 'subido_en'=>date('Y-m-d H:i:s'), 'observaciones'=>$obs, 'creado_por'=>$usuario));
+        if (!$id) { @unlink(Almacen_cargos_model::carpeta().$subido['archivo']); $this->session->set_flashdata('almacen_error', 'No se pudo registrar la guía.'); redirect($this->ruta_cargos()); return; }
+        $this->session->set_flashdata('almacen_ok', 'Guía manual '.$guia.' registrada con su cargo. Queda por verificar.');
+        redirect($this->ruta_cargos());
+    }
+
+    public function cargo_archivo($id = 0)
+    {
+        $this->load->model('Almacen_cargos_model');
+        $k = $this->Almacen_cargos_model->obtener((int) $id);
+        if (!$this->Almacen_cargos_model->visible($k, $this->cargos_supervisor()) || !$k->archivo) { show_404(); return; }
+        $ruta = Almacen_cargos_model::carpeta().basename($k->archivo);
+        if (!is_file($ruta)) { show_404(); return; }
+        $this->output->set_content_type($k->archivo_tipo)->set_header('Cache-Control: private, no-store')->set_header('X-Content-Type-Options: nosniff')
+            ->set_header('Content-Disposition: inline; filename="cargo-'.$k->numero_guia.'.'.pathinfo($ruta, PATHINFO_EXTENSION).'"')->set_output(file_get_contents($ruta));
+    }
+
+    public function verificar_cargo()
+    {
+        $this->validar_post(); $this->load->model('Almacen_cargos_model');
+        $accion = $this->input->post('accion'); $id = $this->input->post('id');
+        if (!is_string($id) || !ctype_digit($id) || !in_array($accion, array('verificar','desverificar'), true)) { show_error('Solicitud inválida.', 400); return; }
+        if (!$this->puede_verificar_cargos() || ($accion === 'desverificar' && !in_array($this->session->userdata('tipo_usu'), array('AD','SA'), true))) { show_error('Tu rol no puede realizar esta acción.', 403); return; }
+        $ok = $this->Almacen_cargos_model->verificar((int) $id, (int) $this->session->userdata('id_usu'), $accion === 'verificar');
+        $this->session->set_flashdata($ok ? 'almacen_ok' : 'almacen_error', $ok ? ($accion === 'verificar' ? 'Cargo verificado.' : 'Verificación retirada.') : 'El cargo no tiene archivo o ya estaba en ese estado.');
+        redirect($this->ruta_cargos());
     }
 
     // ---------------- Pendientes de almacén ----------------

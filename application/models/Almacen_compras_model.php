@@ -7,6 +7,7 @@ class Almacen_compras_model extends CI_Model
     // Varias órdenes por mes, en orden de generación (OC-202610-01, -02, ...).
     public function del_mes($periodo){return $this->db->order_by('numero')->get_where('almacen_compras',array('periodo'=>$periodo))->result();}
     public static function codigo($o){return 'OC-'.str_replace('-','',$o->periodo).'-'.str_pad((int)($o->numero ?? 1),2,'0',STR_PAD_LEFT);}
+    public static function titulo($o){return self::codigo($o).(($o->tipo ?? '')==='manual'?' · '.($o->descripcion!==''?$o->descripcion:'Compra manual'):'');}
     // Aprobadas sin despachar que aún no están en ninguna orden: las que generaría o sumaría la próxima consolidación.
     public function nuevas($periodo)
     {
@@ -41,7 +42,7 @@ class Almacen_compras_model extends CI_Model
     private function consolidar_bloqueado($periodo,$usuario)
     {
         // Una sola orden abierta (borrador) por mes; las recibidas quedan cerradas con sus asignaciones.
-        $compra=$this->db->query("SELECT * FROM almacen_compras WHERE periodo=? AND estado='borrador' ORDER BY numero DESC LIMIT 1 FOR UPDATE",array($periodo))->row();
+        $compra=$this->db->query("SELECT * FROM almacen_compras WHERE periodo=? AND estado='borrador' AND tipo='consolidada' ORDER BY numero DESC LIMIT 1 FOR UPDATE",array($periodo))->row();
         $q=$this->db->query("SELECT a.id FROM almacen_asignaciones a JOIN almacen_clientes c ON c.id=a.cliente_id WHERE a.periodo=? AND a.estado='aprobado' AND c.activo=1 AND NOT EXISTS (SELECT 1 FROM almacen_despachos s WHERE s.asignacion_id=a.id) AND NOT EXISTS (SELECT 1 FROM almacen_compra_asignaciones l JOIN almacen_compras o ON o.id=l.compra_id WHERE l.asignacion_id=a.id AND o.estado<>'borrador') ORDER BY a.id FOR UPDATE",array($periodo));
         if(!$q)return array('error'=>'No se pudieron verificar las asignaciones. Intenta nuevamente.');
         $aprobadas=$q->result();
@@ -78,14 +79,14 @@ class Almacen_compras_model extends CI_Model
         return $ok?array('id'=>$id,'nueva'=>!$compra):array('error'=>'No se pudo guardar la consolidación.');
     }
     // $accion: guardar o aprobar (borrador), recibir o reabrir (aprobada). Los permisos por rol se validan en el controlador.
-    public function guardar($id,$revision,$cantidades,$proveedor,$observaciones,$usuario,$accion='guardar',$sin_stock_previo=array())
+    public function guardar($id,$revision,$cantidades,$proveedor,$observaciones,$usuario,$accion='guardar',$sin_stock_previo=array(),$precios=array())
     {
         $o=$this->obtener($id);
         if(!$o)return 'La orden cambió o ya fue recibida. Vuelve a abrirla.';
         $nombre='almacen-compra-'.$o->periodo;
         $q=$this->db->query('SELECT GET_LOCK(?, 5) AS tomado',array($nombre)); $lock=$q?$q->row():null;
         if(!$lock || !$lock->tomado)return 'Hay otra operación de almacén en este mes. Intenta nuevamente.';
-        try { return $this->guardar_bloqueado($id,$revision,$cantidades,$proveedor,$observaciones,$usuario,$accion,$sin_stock_previo); }
+        try { return $this->guardar_bloqueado($id,$revision,$cantidades,$proveedor,$observaciones,$usuario,$accion,$sin_stock_previo,$precios); }
         finally { $this->db->query('SELECT RELEASE_LOCK(?)',array($nombre)); }
     }
     // Las asignaciones de la orden deben seguir aprobadas, sin despachar y con las mismas cantidades consolidadas.
@@ -104,7 +105,7 @@ class Almacen_compras_model extends CI_Model
         foreach($actuales as $i=>$actual) if($actual->producto_id!=$detalles[$i]->producto_id || round((float)$actual->solicitado*1000)!==round((float)$detalles[$i]->solicitado*1000)) return false;
         return true;
     }
-    private function guardar_bloqueado($id,$revision,$cantidades,$proveedor,$observaciones,$usuario,$accion,$sin_stock_previo=array())
+    private function guardar_bloqueado($id,$revision,$cantidades,$proveedor,$observaciones,$usuario,$accion,$sin_stock_previo=array(),$precios=array())
     {
         $this->db->trans_begin();
         $o=$this->db->query('SELECT * FROM almacen_compras WHERE id=? FOR UPDATE',array($id))->row();
@@ -113,14 +114,15 @@ class Almacen_compras_model extends CI_Model
         if($o->estado!==$requerido){$this->db->trans_rollback();return $o->estado==='borrador'?'La orden debe ser aprobada por Administración antes de registrar la recepción.':($o->estado==='aprobada'?'La orden ya fue aprobada; para modificarla, Administración debe reabrirla.':'La orden ya fue recibida.');}
         if($accion==='reabrir'){
             // Una sola orden en borrador por mes.
-            if($this->db->query("SELECT 1 FROM almacen_compras WHERE periodo=? AND estado='borrador' AND id<>? LIMIT 1",array($o->periodo,$id))->num_rows()){$this->db->trans_rollback();return 'Ya hay otra orden en borrador este mes. Apruébala antes de reabrir esta.';}
+            if($o->tipo==='consolidada' && $this->db->query("SELECT 1 FROM almacen_compras WHERE periodo=? AND estado='borrador' AND tipo='consolidada' AND id<>? LIMIT 1",array($o->periodo,$id))->num_rows()){$this->db->trans_rollback();return 'Ya hay otra orden en borrador este mes. Apruébala antes de reabrir esta.';}
             $ok=$this->db->where('id',$id)->update('almacen_compras',array('estado'=>'borrador','aprobado_por'=>null,'aprobado_en'=>null,'revision'=>$o->revision+1));
             if(!$ok || !$this->db->trans_status()){$this->db->trans_rollback();return 'No se pudo reabrir la orden.';}
             $this->db->trans_commit();return true;
         }
         $recibir=$accion==='recibir';
         $detalles=$this->db->order_by('producto_id')->get_where('almacen_compra_detalles',array('compra_id'=>$id))->result();
-        if(($accion==='aprobar' || $recibir) && !$this->consolidado_vigente($id,$detalles)){
+        if($o->tipo==='manual' && $accion==='aprobar' && !array_filter($detalles,function($d) use ($cantidades){ return (float)($cantidades[$d->producto_id] ?? 0)>0; })){$this->db->trans_rollback();return 'Agrega al menos un producto con cantidad mayor a cero antes de aprobar.';}
+        if($o->tipo==='consolidada' && ($accion==='aprobar' || $recibir) && !$this->consolidado_vigente($id,$detalles)){
             $this->db->trans_rollback();
             return $recibir?'Las asignaciones de esta orden cambiaron. Administración debe reabrirla y actualizar el consolidado.':'Hay cambios en las asignaciones de esta orden. Actualiza el consolidado antes de aprobar.';
         }
@@ -130,11 +132,18 @@ class Almacen_compras_model extends CI_Model
             // Aprobada la orden, las cantidades quedan fijas: Almacén recibe lo aprobado.
             $cantidad=$recibir?(string)$d->cantidad:($cantidades[$d->producto_id]??null);
             if(!is_string($cantidad)||!preg_match('/^\d{1,9}(?:\.\d{1,3})?$/D',$cantidad)){$this->db->trans_rollback();return 'Revisa las cantidades a adquirir.';}
-            $importe=round($cantidad*$d->precio_real,2);$total+=$importe;
+            // En borrador el precio de cada línea es editable (con IGV); aprobada la orden queda fijo.
+            $precio=$d->precio_real;
+            if(!$recibir && isset($precios[$d->producto_id])){
+                $nuevo_precio=$precios[$d->producto_id];
+                if(!is_string($nuevo_precio)||!preg_match('/^\d{1,9}(?:\.\d{1,2})?$/D',$nuevo_precio)){$this->db->trans_rollback();return 'Revisa los precios: deben ser montos positivos o cero, con hasta 2 decimales.';}
+                $precio=$nuevo_precio;
+            }
+            $importe=round($cantidad*$precio,2);$total+=$importe;
             if($total>9999999999999.99){$this->db->trans_rollback();return 'El importe supera el rango permitido.';}
             if(!$recibir){
                 $ajustado=$d->ajustado || round((float)$cantidad,3)!==round((float)$d->cantidad,3);
-                $ok=$ok && $this->db->where('id',$d->id)->update('almacen_compra_detalles',array('cantidad'=>$cantidad,'total'=>$importe,'ajustado'=>$ajustado?1:0));
+                $ok=$ok && $this->db->where('id',$d->id)->update('almacen_compra_detalles',array('cantidad'=>$cantidad,'precio_real'=>$precio,'total'=>$importe,'ajustado'=>$ajustado?1:0));
             }
             $p=null;
             // Quien recibe declara que no había existencias previas: se registra el conteo (0) antes de la entrada.
@@ -157,7 +166,7 @@ class Almacen_compras_model extends CI_Model
                 $ok=$ok && $this->db->insert('almacen_movimientos',array('producto_id'=>$p->id,'tipo'=>'entrada','cantidad'=>$cantidad,'stock_anterior'=>$p->stock,'stock_nuevo'=>$nuevo,'motivo'=>'Recepción '.$orden,'proveedor'=>mb_substr($o->proveedor,0,200),'usuario_id'=>$usuario));$entradas++;
             }
         }
-        foreach(array_merge(array_keys($cantidades),array_keys($sin_stock_previo)) as $pid)if(!in_array((string)$pid,$ids,true)){$this->db->trans_rollback();return 'Se recibió un producto ajeno a la orden.';}
+        foreach(array_merge(array_keys($cantidades),array_keys($sin_stock_previo),array_keys($precios)) as $pid)if(!in_array((string)$pid,$ids,true)){$this->db->trans_rollback();return 'Se recibió un producto ajeno a la orden.';}
         if($recibir && !$entradas){$this->db->trans_rollback();return 'No hay cantidades a adquirir para recibir.';}
         $data=array('revision'=>$o->revision+1,'usuario_id'=>$usuario);
         if(!$recibir) $data=array_merge($data,array('proveedor'=>$proveedor,'observaciones'=>$observaciones,'total'=>$total));
@@ -165,6 +174,38 @@ class Almacen_compras_model extends CI_Model
         if($recibir) $data=array_merge($data,array('estado'=>'recibida','recibido_por'=>$usuario,'recibido_en'=>date('Y-m-d H:i:s')));
         $ok=$ok && $this->db->where('id',$id)->update('almacen_compras',$data);
         if(!$ok || !$this->db->trans_status()){$this->db->trans_rollback();return 'No se pudo guardar la orden.';}
+        $this->db->trans_commit();return true;
+    }
+    // ---- Órdenes manuales (reposición): se crean vacías y se agregan productos con cantidad y precio ----
+    public function crear_manual($periodo,$descripcion,$usuario)
+    {
+        $nombre='almacen-compra-'.$periodo;
+        $q=$this->db->query('SELECT GET_LOCK(?, 5) AS tomado',array($nombre));
+        if(!$q || !$q->row()->tomado) return array('error'=>'Hay otra operación de almacén en este mes. Intenta nuevamente.');
+        try {
+            $numero=(int)$this->db->query('SELECT COALESCE(MAX(numero),0)+1 AS n FROM almacen_compras WHERE periodo=?',array($periodo))->row()->n;
+            $ok=$this->db->insert('almacen_compras',array('periodo'=>$periodo,'numero'=>$numero,'tipo'=>'manual','descripcion'=>$descripcion,'total'=>0,'usuario_id'=>$usuario));
+            return $ok?array('id'=>(int)$this->db->insert_id()):array('error'=>'No se pudo crear la orden.');
+        } finally { $this->db->query('SELECT RELEASE_LOCK(?)',array($nombre)); }
+    }
+    public function linea_manual($id,$accion,$producto_id,$cantidad,$precio,$usuario)
+    {
+        $this->db->trans_begin();
+        $o=$this->db->query('SELECT * FROM almacen_compras WHERE id=? FOR UPDATE',array($id))->row();
+        if(!$o || $o->tipo!=='manual' || $o->estado!=='borrador'){$this->db->trans_rollback();return 'Solo se modifican productos de una orden manual en borrador.';}
+        if($accion==='quitar'){
+            $ok=$this->db->where(array('compra_id'=>$id,'producto_id'=>$producto_id))->delete('almacen_compra_detalles');
+        } else {
+            $p=$this->db->get_where('almacen_productos',array('id'=>$producto_id))->row();
+            if(!$p || !$p->activo || $p->unidad==='POR DEFINIR'){$this->db->trans_rollback();return 'El producto no está disponible o no tiene unidad definida.';}
+            $precio=$precio===''?(string)$p->precio_valorado:$precio;
+            $linea=array('descripcion'=>$p->descripcion,'unidad'=>$p->unidad,'marca'=>$p->marca,'solicitado'=>$cantidad,'stock_disponible'=>$p->stock_confirmado?$p->stock:0,'stock_confirmado'=>$p->stock_confirmado,'cantidad'=>$cantidad,'precio_real'=>$precio,'total'=>round($cantidad*$precio,2),'ajustado'=>0);
+            $existe=$this->db->get_where('almacen_compra_detalles',array('compra_id'=>$id,'producto_id'=>$producto_id))->row();
+            $ok=$existe?$this->db->where('id',$existe->id)->update('almacen_compra_detalles',$linea):$this->db->insert('almacen_compra_detalles',array_merge($linea,array('compra_id'=>$id,'producto_id'=>$producto_id)));
+        }
+        $total=$this->db->select('COALESCE(SUM(total),0) AS t',false)->get_where('almacen_compra_detalles',array('compra_id'=>$id))->row()->t;
+        $ok=$ok && $this->db->where('id',$id)->update('almacen_compras',array('total'=>$total,'revision'=>$o->revision+1,'usuario_id'=>$usuario));
+        if(!$ok || !$this->db->trans_status()){$this->db->trans_rollback();return 'No se pudo actualizar la orden.';}
         $this->db->trans_commit();return true;
     }
     public function nombre_usuario($id)
