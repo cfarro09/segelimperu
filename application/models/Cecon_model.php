@@ -1,8 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-// CECON: consulta de solo lectura de las tareas (tickets) que los supervisores registran en la app móvil
-// y de su descargo. Las tablas app_* pertenecen al API; aquí nunca se escribe en ellas.
+// CECON: consulta de las tareas (tickets) que los supervisores registran en la app móvil y de su descargo.
+// Las tablas app_* pertenecen al API. La única escritura es aprobar un descargo (aprobar()), que replica su lógica.
 class Cecon_model extends CI_Model
 {
     // Estados del API (app_tickets.status): etiqueta en español y clase de la insignia.
@@ -78,6 +78,19 @@ class Cecon_model extends CI_Model
             $c['todas'] += (int) $f->n;
         }
         return $c;
+    }
+
+    // Aprueba el descargo y certifica la tarea: DISCHARGED -> COMPLETED con closed_at (UTC, como el resto del API).
+    // Igual que el descargo del API, el cambio está condicionado al estado esperado para que dos aprobaciones no se pisen.
+    // Devuelve 'ok', 'no_existe', 'estado' (no está en DISCHARGED) o 'bd'.
+    public function aprobar($id)
+    {
+        $t = $this->db->query("SELECT status FROM app_tickets WHERE id = ?", array((int) $id))->row();
+        if (!$t) return 'no_existe';
+        if ($t->status !== 'DISCHARGED') return 'estado';
+        $ok = $this->db->query("UPDATE app_tickets SET status = 'COMPLETED', closed_at = UTC_TIMESTAMP(3) WHERE id = ? AND status = 'DISCHARGED'", array((int) $id));
+        if (!$ok) return 'bd';
+        return $this->db->affected_rows() === 1 ? 'ok' : 'estado';
     }
 
     // Solo se muestran fotos servidas por https; cualquier otro valor (vacío, javascript:, data:) se descarta.

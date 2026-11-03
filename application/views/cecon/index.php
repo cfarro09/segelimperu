@@ -57,6 +57,7 @@
             </div>
         </div>
         <div class="modal-footer">
+            <p class="small mr-auto mb-0" role="status" aria-live="polite" data-cecon="aviso-aprobar" hidden></p>
             <button type="button" class="btn btn-light" data-dismiss="modal">Cerrar</button>
             <button type="button" class="btn btn-success" data-cecon="aprobar" hidden><i class="mdi mdi-check" aria-hidden="true"></i> Aprobar descargo y certificar ticket</button>
         </div>
@@ -65,7 +66,7 @@
 <?php $this->load->view('almacen/datatables'); ?>
 <script>
 jQuery(function($) {
-    var modal=$('#cecon-detalle'), raiz=modal[0], urlDetalle=<?= json_encode(site_url('cecon/detalle')) ?>, peticion=null;
+    var modal=$('#cecon-detalle'), raiz=modal[0], urlDetalle=<?= json_encode(site_url('cecon/detalle')) ?>, urlAprobar=<?= json_encode(site_url('cecon/aprobar')) ?>, token=<?= json_encode($token) ?>, peticion=null, actual=null, confirmando=false;
     function campo(nombre) { return raiz.querySelector('[data-cecon="'+nombre+'"]'); }
     function texto(nombre, valor) { campo(nombre).textContent=valor || '—'; }
     function fotos(nombre, urls, descripcion) {
@@ -99,10 +100,26 @@ jQuery(function($) {
         mostrar('aprobar', d.estado.codigo==='DISCHARGED');
         mostrar('contenido', true);
     }
-    // TODO: conectar "Aprobar descargo y certificar ticket" con el API para actualizar el estado de la tarea
-    // (sin contrato definido todavía; por ahora el botón no hace nada).
+    var textoAprobar=campo('aprobar').innerHTML;
+    function reiniciarAprobar() { confirmando=false; var b=campo('aprobar'); b.disabled=false; b.innerHTML=textoAprobar; mostrar('aviso-aprobar', false); }
+    // Primer clic: pide confirmación dentro del diálogo. Segundo clic: aprueba (DISCHARGED -> COMPLETED) y recarga la lista.
+    campo('aprobar').addEventListener('click', function() {
+        var boton=this, aviso=campo('aviso-aprobar');
+        if(!confirmando) {
+            confirmando=true; boton.textContent='Sí, aprobar y cerrar la tarea';
+            aviso.className='small mr-auto mb-0 text-success'; aviso.textContent='La tarea pasará a «Completada» y quedará cerrada.'; mostrar('aviso-aprobar', true);
+            return;
+        }
+        boton.disabled=true; boton.textContent='Aprobando…'; mostrar('error', false);
+        $.ajax({url:urlAprobar, method:'POST', dataType:'json', data:{token:token, id:actual}})
+            .done(function() { modal.modal('hide'); location.reload(); })
+            .fail(function(xhr) {
+                campo('error').textContent=xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'No se pudo aprobar la tarea. Actualice la página e intente nuevamente.';
+                mostrar('error', true); reiniciarAprobar();
+            });
+    });
     $(document).on('click','[data-cecon-detalle]',function() {
-        var boton=this;
+        var boton=this; actual=boton.dataset.id; reiniciarAprobar();
         raiz.querySelector('#cecon-detalle-codigo').textContent=boton.dataset.codigo;
         campo('estado').textContent=''; campo('estado').className='badge';
         mostrar('contenido', false); mostrar('error', false); mostrar('aprobar', false); mostrar('carga', true);
