@@ -64,7 +64,7 @@ class Almacen_model extends CI_Model
         return $this->db->order_by('id', 'DESC')->get_where('almacen_movimientos', array('producto_id' => $id))->result();
     }
 
-    const CATEGORIAS = array('MATERIALES' => 'Materiales', 'IMPLEMENTOS' => 'Implementos', 'VENENOS' => 'Venenos');
+    const CATEGORIAS = array('MATERIALES' => 'Materiales', 'IMPLEMENTOS' => 'Implementos', 'VENENOS' => 'Venenos', 'UNIFORMES' => 'Uniformes y EPP');
     public function guardar($id, $data, $stock, $usuario)
     {
         if (!isset($data['precio_real']) || $data['precio_real'] === '') $data['precio_real'] = $data['precio_valorado'];

@@ -478,6 +478,7 @@
         var guardia = proteger(formulario, document.getElementById('estado-compra')), aceptado = false, confirmando = false, total = 0, productos = 0;
         var vistaClientes = document.getElementById('ver-clientes-compra');
         function mostrarVista() {
+            if (!document.getElementById('compra-clientes')) return;
             document.getElementById('compra-consolidado').hidden = vistaClientes.checked;
             document.getElementById('compra-clientes').hidden = !vistaClientes.checked;
             document.getElementById('compra-vista-titulo').textContent = vistaClientes.checked ? 'Solicitado por cliente' : 'Consolidado';
@@ -498,13 +499,13 @@
         function actualizar() {
             total = 0; productos = 0;
             formulario.querySelectorAll('.compra-linea').forEach(function (f) {
-                var c = Number(f.querySelector('.cantidad-compra').value) || 0, importe = Math.round(c * Number(f.dataset.precio) * 100);
+                var precio = f.querySelector('.precio-compra'), c = Number(f.querySelector('.cantidad-compra').value) || 0, importe = Math.round(c * Number(precio ? precio.value : f.dataset.precio) * 100);
                 total += importe; if (c > 0) productos++;
                 f.querySelector('.importe-compra').textContent = dinero(importe / 100);
             });
             document.getElementById('total-compra').textContent = dinero(total / 100);
         }
-        formulario.querySelectorAll('.cantidad-compra').forEach(function (e) { e.addEventListener('input', actualizar); }); actualizar();
+        formulario.querySelectorAll('.cantidad-compra, .precio-compra').forEach(function (e) { e.addEventListener('input', actualizar); }); actualizar();
         formulario.addEventListener('submit', function (e) {
             var boton = e.submitter || document.activeElement;
             if (!boton || boton.name !== 'accion') { e.preventDefault(); return; }
@@ -815,6 +816,64 @@
         });
     }
     function sincronizarSelect(select) { if (window.jQuery && select.hasAttribute('data-select-buscable')) window.jQuery(select).trigger('change.select2'); }
+
+    // Cargos de guías: vista previa y compresión de fotos en el navegador (el servidor acepta hasta 2 MB).
+    var LIMITE_CARGO = 1900 * 1024;
+    function comprimirImagen(archivo) {
+        return new Promise(function (resolver, rechazar) {
+            var img = new Image(), url = URL.createObjectURL(archivo);
+            img.onload = function () {
+                var lado = 1600, escala = Math.min(1, lado / Math.max(img.naturalWidth, img.naturalHeight));
+                var lienzo = document.createElement('canvas'); lienzo.width = Math.round(img.naturalWidth * escala); lienzo.height = Math.round(img.naturalHeight * escala);
+                lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height); URL.revokeObjectURL(url);
+                var calidad = 0.82;
+                (function intentar() {
+                    lienzo.toBlob(function (blob) {
+                        if (!blob) { rechazar(new Error('sin imagen')); return; }
+                        if (blob.size > LIMITE_CARGO && calidad > 0.45) { calidad -= 0.12; intentar(); return; }
+                        resolver(new File([blob], (archivo.name || 'cargo').replace(/\.[^.]+$/, '') + '.jpg', {type: 'image/jpeg'}));
+                    }, 'image/jpeg', calidad);
+                })();
+            };
+            img.onerror = function () { URL.revokeObjectURL(url); rechazar(new Error('imagen no legible')); };
+            img.src = url;
+        });
+    }
+    if (window.jQuery) window.jQuery(document).on('show.bs.modal', '#modal-subir-cargo', function (e) {
+        var boton = e.relatedTarget, f = this.querySelector('form');
+        if (!boton) return;
+        f.elements.id.value = boton.getAttribute('data-cargo-id');
+        this.querySelector('[data-cargo-guia]').textContent = boton.getAttribute('data-cargo-guia');
+        f.reset(); f.elements.id.value = boton.getAttribute('data-cargo-id');
+        var vista = this.querySelector('[data-cargo-vista]'); vista.hidden = true; vista.removeAttribute('src');
+    });
+    document.addEventListener('change', function (e) {
+        var input = e.target; if (!input.closest || !input.closest('form[data-cargo-form]') || input.type !== 'file') return;
+        var vista = input.closest('form').querySelector('[data-cargo-vista]'), archivo = input.files && input.files[0];
+        if (!vista) return;
+        if (archivo && archivo.type.indexOf('image/') === 0) { vista.src = URL.createObjectURL(archivo); vista.hidden = false; } else { vista.hidden = true; vista.removeAttribute('src'); }
+    });
+    document.addEventListener('submit', function (e) {
+        var formulario = e.target.closest && e.target.closest('form[data-cargo-form]');
+        if (!formulario || formulario.dataset.listo === '1') return;
+        var input = formulario.querySelector('input[type="file"]'), archivo = input && input.files && input.files[0];
+        if (!archivo) return;
+        e.preventDefault();
+        var boton = formulario.querySelector('button[type="submit"]'), texto = boton.textContent;
+        function enviar() { formulario.dataset.listo = '1'; boton.disabled = true; boton.textContent = 'Subiendo…'; formulario.submit(); }
+        if (archivo.type === 'application/pdf') {
+            if (archivo.size > LIMITE_CARGO) { confirmar('PDF muy pesado', 'El PDF supera 2 MB. Redúcelo o sube una foto de la guía.', [], 'Entendido'); return; }
+            enviar(); return;
+        }
+        if (archivo.type.indexOf('image/') !== 0) { confirmar('Formato no admitido', 'Sube una foto (JPG, PNG) o un PDF.', [], 'Entendido'); return; }
+        boton.disabled = true; boton.textContent = 'Preparando foto…';
+        comprimirImagen(archivo).then(function (comprimida) {
+            var dt = new DataTransfer(); dt.items.add(comprimida); input.files = dt.files; enviar();
+        }).catch(function () {
+            boton.disabled = false; boton.textContent = texto;
+            if (archivo.size <= LIMITE_CARGO) enviar(); else confirmar('No se pudo preparar la foto', 'Intenta con otra foto o tómala de nuevo.', [], 'Entendido');
+        });
+    });
 
     // Pendientes: confirmar antes de marcar como atendido (delegado: sirve también para filas actualizadas por el modal).
     document.addEventListener('submit', function (e) {

@@ -1,107 +1,42 @@
-<!--content header -->
-  <!-- LOGO -->
-  <div class="topbar-left">
-      <a href="<?= site_url() ?>" class="logo">
-                  <span>
-                      <img src="<?=base_url()?>assets/images/logo.png" alt="" height="25">
-                  </span>
-          <i>
-              <img src="<?=base_url()?>assets/images/logo_sm.png" alt="" height="28">
-          </i>
-      </a>
-  </div>
+<?php
+require_once APPPATH.'libraries/Almacen_acceso.php';
+$usuario_nombre = trim((string) $this->session->userdata('nombre_usu'));
+$usuario_rol = (string) $this->session->userdata('tipo_usu');
+$roles_usuario = array('SA' => 'Super Admin', 'AD' => 'Administrador', 'RC' => 'Recibos', 'GE' => 'Gerencia', 'US' => 'Usuario') + Almacen_acceso::roles();
+$usuario_rol_nombre = isset($roles_usuario[$usuario_rol]) ? $roles_usuario[$usuario_rol] : $usuario_rol;
+$partes_nombre = preg_split('/\s+/', $usuario_nombre, -1, PREG_SPLIT_NO_EMPTY);
+$usuario_iniciales = mb_strtoupper(implode('', array_map(function ($p) { return mb_substr($p, 0, 1); }, array_slice($partes_nombre, 0, 2))));
+?>
+<!-- LOGO -->
+<div class="topbar-left">
+    <a href="<?= site_url() ?>" class="logo" aria-label="Segelim Perú · Inicio">
+        <span><img src="<?= base_url() ?>assets/images/logo_marca_claro.png" alt="Segelim Perú" class="marco-logo"></span>
+        <i><img src="<?= base_url() ?>assets/images/logo_gota_claro.png" alt="Segelim Perú" class="marco-logo-sm"></i>
+    </a>
+</div>
 
-  <nav class="navbar-custom">
+<nav class="navbar-custom">
+    <ul class="list-inline float-right mb-0">
+        <li class="list-inline-item dropdown notification-list">
+            <a class="nav-link dropdown-toggle arrow-none marco-usuario" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Menú de usuario">
+                <span class="marco-avatar" aria-hidden="true"><?= html_escape($usuario_iniciales !== '' ? $usuario_iniciales : '?') ?></span>
+                <span class="marco-usuario-texto hide-phone"><strong><?= html_escape($usuario_nombre) ?></strong><small><?= html_escape($usuario_rol_nombre) ?></small></span>
+                <i class="mdi mdi-chevron-down hide-phone" aria-hidden="true"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right profile-dropdown">
+                <div class="dropdown-item noti-title"><h5 class="text-overflow"><?= html_escape($usuario_nombre) ?><small class="d-block"><?= html_escape($usuario_rol_nombre) ?></small></h5></div>
+                <a href="<?= site_url() ?>" class="dropdown-item notify-item"><i class="mdi mdi-home"></i> <span>Inicio</span></a>
+                <a href="<?= site_url('login/logout') ?>" class="dropdown-item notify-item"><i class="mdi mdi-logout"></i> <span>Cerrar sesión</span></a>
+            </div>
+        </li>
+    </ul>
 
-      <ul class="list-inline float-right mb-0">
-          <li class="list-inline-item dropdown notification-list">
-              <a class="nav-link dropdown-toggle arrow-none waves-light waves-effect" data-toggle="dropdown" href="#" role="button"
-                 aria-haspopup="false" aria-expanded="false">
-                  <i class="dripicons-bell noti-icon"></i>
-                  <span class="badge badge-pink noti-icon-badge">4</span>
-              </a>
-              <div class="dropdown-menu dropdown-menu-right dropdown-arrow dropdown-lg" aria-labelledby="Preview">
-                  <!-- item-->
-                  <div class="dropdown-item noti-title">
-                      <h5><span class="badge badge-danger float-right">5</span>Notification</h5>
-                  </div>
-
-                  <!-- item-->
-                  <a href="javascript:void(0);" class="dropdown-item notify-item">
-                      <div class="notify-icon bg-success"><i class="icon-bubble"></i></div>
-                      <p class="notify-details">Robert S. Taylor commented on Admin<small class="text-muted">1 min ago</small></p>
-                  </a>
-
-                  <!-- item-->
-                  <a href="javascript:void(0);" class="dropdown-item notify-item">
-                      <div class="notify-icon bg-info"><i class="icon-user"></i></div>
-                      <p class="notify-details">New user registered.<small class="text-muted">1 min ago</small></p>
-                  </a>
-
-                  <!-- item-->
-                  <a href="javascript:void(0);" class="dropdown-item notify-item">
-                      <div class="notify-icon bg-danger"><i class="icon-like"></i></div>
-                      <p class="notify-details">Carlos Crouch liked <b>Admin</b><small class="text-muted">1 min ago</small></p>
-                  </a>
-
-                  <!-- All-->
-                  <a href="javascript:void(0);" class="dropdown-item notify-item notify-all">
-                      View All
-                  </a>
-
-              </div>
-          </li>
-
-          <li class="list-inline-item dropdown notification-list">
-              <a class="nav-link dropdown-toggle waves-effect waves-light nav-user" data-toggle="dropdown" href="#" role="button"
-                 aria-haspopup="false" aria-expanded="false">
-                  <img src="<?=base_url()?>assets/images/users/avatar-1.jpg" alt="user" class="rounded-circle">
-              </a>
-              <div class="dropdown-menu dropdown-menu-right profile-dropdown " aria-labelledby="Preview">
-                  <!-- item-->
-                  <div class="dropdown-item noti-title">
-                      <h5 class="text-overflow"><small>Welcome ! John</small> </h5>
-                  </div>
-
-                  <!-- item-->
-                  <a href="javascript:void(0);" class="dropdown-item notify-item">
-                      <i class="mdi mdi-account-circle"></i> <span>Profile</span>
-                  </a>
-
-                  <!-- item-->
-                  <a href="javascript:void(0);" class="dropdown-item notify-item">
-                      <i class="mdi mdi-settings"></i> <span>Settings</span>
-                  </a>
-
-                  <!-- item-->
-                  <a href="javascript:void(0);" class="dropdown-item notify-item">
-                      <i class="mdi mdi-lock-open"></i> <span>Lock Screen</span>
-                  </a>
-
-                  <!-- item-->
-                  <a href="<?php echo site_url('login/logout');?>" class="dropdown-item notify-item">
-                      <i class="mdi mdi-power"></i> <span>Logout</span>
-                  </a>
-
-              </div>
-          </li>
-
-      </ul>
-
-      <ul class="list-inline menu-left mb-0">
-          <li class="float-left">
-              <button class="button-menu-mobile open-left waves-light waves-effect">
-                  <i class="dripicons-menu"></i>
-              </button>
-          </li>
-          <li class="hide-phone app-search">
-              <form role="search" class="">
-                  <input type="text" placeholder="Buscar…" aria-label="Buscar" class="form-control">
-                  <a href=""><i class="fa fa-search"></i></a>
-              </form>
-          </li>
-      </ul>
-
-  </nav>
-  <!-- Top Bar End -->
-<!--content header -->
+    <ul class="list-inline menu-left mb-0">
+        <li class="float-left">
+            <button class="button-menu-mobile open-left waves-light waves-effect" aria-label="Mostrar u ocultar menú">
+                <i class="dripicons-menu"></i>
+            </button>
+        </li>
+    </ul>
+</nav>
+<!-- Top Bar End -->

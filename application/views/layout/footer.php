@@ -1,6 +1,6 @@
 <!-- footer content -->
 <footer class="footer text-right">
-    2017 - 2018 © Adminox. - Coderthemes.com
+    © <?= date('Y') ?> Segelim Perú S.A.C.
 </footer>
 <!-- /footer content -->
 <div id="loading-circle-overlay" >

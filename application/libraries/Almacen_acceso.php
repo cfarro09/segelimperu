@@ -31,17 +31,17 @@ class Almacen_acceso
         }
         if (in_array($rol, array('AD', 'SA'), true)) return true;
         $consulta_asignaciones = array('index', 'asignacion', 'asignaciones', 'imprimir_asignacion', 'exportar_asignacion');
-        $pendientes = array('pendientes', 'pendiente', 'guardar_pendiente');
+        $pendientes = array('pendientes', 'pendiente', 'guardar_pendiente', 'cargos', 'subir_cargo', 'registrar_cargo', 'cargo_archivo');
         if ($rol === 'SP') return in_array($metodo, array_merge($consulta_asignaciones, $pendientes, array('guardar_asignacion')), true);
         // Comercial: solo crear y editar los datos de clientes (sin asignaciones ni inventario).
         if ($rol === 'CM') return in_array($metodo, array('index', 'clientes', 'cliente', 'guardar_cliente'), true);
         if ($rol === 'AL') {
             return in_array($metodo, array_merge($consulta_asignaciones, array(
-                'productos', 'producto', 'guardar', 'inventario', 'movimiento', 'pendientes', 'pendiente', 'guardar_pendiente', 'atender_pendiente',
+                'productos', 'producto', 'guardar', 'inventario', 'movimiento', 'pendientes', 'pendiente', 'guardar_pendiente', 'atender_pendiente', 'cargos', 'subir_cargo', 'registrar_cargo', 'cargo_archivo', 'verificar_cargo',
                 'clientes', 'cliente', 'guardar_cliente',
                 'revision_asignaciones', 'revisar_asignacion', 'guardar_revision_asignacion', 'decidir_asignacion',
                 'despacho', 'confirmar_despacho', 'guia_salida',
-                'ordenes_compra', 'consolidar_compras', 'orden_compra', 'guardar_compra', 'imprimir_compra', 'exportar_compra'
+                'ordenes_compra', 'consolidar_compras', 'orden_compra', 'guardar_compra', 'crear_compra_manual', 'linea_compra', 'imprimir_compra', 'exportar_compra'
             )), true);
         }
         return false;

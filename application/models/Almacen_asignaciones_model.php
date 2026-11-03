@@ -161,5 +161,32 @@ class Almacen_asignaciones_model extends CI_Model
         if(!$ok || !$this->db->trans_status()) { $this->db->trans_rollback(); return 'No se pudo registrar la revisión.'; }
         $this->db->trans_commit(); return true;
     }
+    // Administración anula una aprobación: la asignación vuelve a "Necesita corrección" (rechazado) con el motivo,
+    // y sale de su orden de compra. No procede si ya se despachó ni si su orden está aprobada y por recibir.
+    public function anular($id, $revision, $motivo, $usuario)
+    {
+        $motivo = is_string($motivo) ? trim($motivo) : '';
+        if ($motivo === '' || mb_strlen($motivo) > 900) return 'Indica el motivo de la anulación (hasta 900 caracteres).';
+        $referencia = $this->obtener($id);
+        if (!$referencia) return 'La asignación no existe.';
+        $nombre = 'almacen-compra-'.$referencia->periodo;
+        $q = $this->db->query('SELECT GET_LOCK(?, 5) AS tomado', array($nombre));
+        if (!$q || !$q->row()->tomado) return 'Hay otra operación de almacén en este mes. Intenta nuevamente.';
+        try {
+            $this->db->trans_begin();
+            $a = $this->db->query('SELECT * FROM almacen_asignaciones WHERE id = ? FOR UPDATE', array($id))->row();
+            if (!$a || $a->revision != $revision) { $this->db->trans_rollback(); return 'La asignación cambió. Vuelve a abrirla.'; }
+            if ($a->estado !== 'aprobado') { $this->db->trans_rollback(); return 'Solo se anula una asignación aprobada. Si está pendiente de revisión, usa Rechazar.'; }
+            if ($this->db->get_where('almacen_despachos', array('asignacion_id' => $id))->num_rows()) { $this->db->trans_rollback(); return 'La asignación ya fue despachada: el material salió del almacén y no se puede anular.'; }
+            $orden = $this->db->query("SELECT o.id, o.periodo, o.numero, o.estado FROM almacen_compra_asignaciones l JOIN almacen_compras o ON o.id = l.compra_id WHERE l.asignacion_id = ? FOR UPDATE", array($id))->row();
+            if ($orden && $orden->estado === 'aprobada') { $this->db->trans_rollback(); return 'Está en la orden '.Almacen_compras_model::codigo($orden).', aprobada y por recibir. Reábrela antes de anular.'; }
+            $comentario = 'Anulación de la aprobación: '.$motivo.($orden ? ' (retirada de '.Almacen_compras_model::codigo($orden).')' : '');
+            $ok = !$orden || $this->db->where(array('compra_id' => $orden->id, 'asignacion_id' => $id))->delete('almacen_compra_asignaciones');
+            if ($ok) $ok = $this->db->where('id', $id)->update('almacen_asignaciones', array('estado' => 'rechazado', 'revision' => $a->revision + 1, 'revisado_por' => $usuario, 'revisado_en' => date('Y-m-d H:i:s'), 'comentario_revision' => $comentario));
+            if ($ok) $ok = $this->db->insert('almacen_asignacion_eventos', array('asignacion_id' => $id, 'estado_anterior' => 'aprobado', 'estado_nuevo' => 'rechazado', 'usuario_id' => $usuario, 'comentario' => $comentario));
+            if (!$ok || !$this->db->trans_status()) { $this->db->trans_rollback(); return 'No se pudo anular la asignación.'; }
+            $this->db->trans_commit(); return true;
+        } finally { $this->db->query('SELECT RELEASE_LOCK(?)', array($nombre)); }
+    }
     public function eventos($id) { return $this->db->order_by('id','DESC')->get_where('almacen_asignacion_eventos',array('asignacion_id'=>$id))->result(); }
 }

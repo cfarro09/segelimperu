@@ -7,7 +7,14 @@ class Almacen_despachos_model extends CI_Model
     public function __construct() { parent::__construct(); $this->load->database(); }
     public function obtener($id) { return $this->db->get_where('almacen_despachos',array('id'=>$id))->row(); }
     public function de_asignacion($id) { return $this->db->get_where('almacen_despachos',array('asignacion_id'=>$id))->row(); }
-    public function detalles($id) { return $this->db->order_by('id')->get_where('almacen_despacho_detalles',array('despacho_id'=>$id))->result(); }
+    // Mismo orden que la revisión de la asignación: por categoría y luego por descripción.
+    public function detalles($id)
+    {
+        return $this->db->select('dd.*, p.categoria')->from('almacen_despacho_detalles dd')->join('almacen_productos p', 'p.id = dd.producto_id', 'left')
+            ->where('dd.despacho_id', (int) $id)
+            ->order_by("CASE p.categoria WHEN 'MATERIALES' THEN 0 WHEN 'IMPLEMENTOS' THEN 1 ELSE 2 END", 'ASC', false)
+            ->order_by('p.categoria')->order_by('dd.descripcion')->order_by('dd.id')->get()->result();
+    }
     // Guía de traslado - almacén: serie propia del sistema (0002) para no cruzarse con el talonario impreso (0001).
     const SERIE_GUIA='0002';
     public static function numero($d) { return self::SERIE_GUIA.'-'.str_pad($d->id,6,'0',STR_PAD_LEFT); }
@@ -101,6 +108,8 @@ class Almacen_despachos_model extends CI_Model
             $mid=$this->db->insert_id();
             if ($ok) $ok=$this->db->insert('almacen_despacho_detalles',array('despacho_id'=>$sid,'producto_id'=>$p->id,'movimiento_id'=>$mid,'codigo'=>$p->codigo,'descripcion'=>$d->descripcion,'unidad'=>$d->unidad,'marca'=>$d->marca,'cantidad'=>$d->cantidad,'stock_anterior'=>$p->stock,'stock_nuevo'=>$nuevo));
         }
+        // Cada despacho deja su cargo pendiente: la guía firmada y sellada se sube después en "Cargos de guías".
+        if ($ok) $ok=$this->db->insert('almacen_cargos',array('despacho_id'=>$sid,'cliente_id'=>$c->id,'sede'=>$c->nombre,'numero_guia'=>self::SERIE_GUIA.'-'.str_pad($sid,6,'0',STR_PAD_LEFT),'fecha_guia'=>substr($fecha,0,10),'creado_por'=>$usuario));
         if (!$ok || !$this->db->trans_status()) return $this->fallar('No se pudo registrar el despacho. No se descontó stock.');
         $this->db->trans_commit(); $this->liberar(); return array('id'=>(int)$sid,'existente'=>false);
     }

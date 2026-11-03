@@ -63,6 +63,15 @@
 .revision-cantidad { width: 92px; height: 30px; margin-left: auto; padding: 2px 8px; font-size: 14px; font-variant-numeric: tabular-nums; }
 .almacen-modulo .revision-cantidades-tabla > tbody > tr > td, .almacen-modulo .revision-cantidades-tabla > thead > tr > th { padding: 4px 10px; vertical-align: middle; }
 .revision-cantidades-tabla tr[hidden] { display: none !important; }
+.compra-manual-etiqueta { font-size: 11px; opacity: .85; }
+.compra-agregar { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px 12px; margin: 0; }
+.compra-agregar > div { flex: 0 0 140px; }
+.compra-agregar label { font-size: 12px; margin-bottom: 2px; }
+.compra-agregar .compra-agregar-producto { flex: 1 1 320px; min-width: 240px; }
+.cargos-acciones { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cargos-mes { display: flex; align-items: center; gap: 6px; margin: 0; }
+.cargos-mes input { width: 160px; }
+.cargo-vista { display: block; max-width: 100%; max-height: 260px; border: 1px solid #e5e9ee; border-radius: 6px; }
 .pendientes-barra { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .pendientes-vistas { display: flex; flex-wrap: wrap; gap: 6px; }
 .pendientes-urgentes { font-size: 12px; padding: 5px 8px; }
