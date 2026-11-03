@@ -36,7 +36,7 @@ $url = function($v) { return site_url('usuarios_app').'?vista='.urlencode($v); }
         <td><?= $u->con_push ? '<span class="badge badge-success">Activas</span>' : '<span class="text-muted">No</span>' ?></td>
         <td class="almacen-celda-acciones"><?php if($editable): ?><div class="almacen-acciones-iconos">
             <button type="button" class="btn btn-light" data-usuario-editar data-id="<?= (int)$u->id ?>" data-nombre="<?= html_escape($u->fullname) ?>" data-email="<?= html_escape($u->email) ?>" data-rol="<?= html_escape($u->rol) ?>"
-                data-area-id="<?= $u->area_id!==null?(int)$u->area_id:'' ?>" data-legacy-id="<?= $u->legacy_user_id!==null?(int)$u->legacy_user_id:'' ?>" data-legacy-nombre="<?= html_escape($u->legacy_nombre) ?>" data-legacy-tipo="<?= html_escape((string)$u->legacy_tipo) ?>" data-activo="<?= $u->is_active?'1':'0' ?>"
+                data-area-id="<?= $u->area_id!==null?(int)$u->area_id:'' ?>" data-legacy-id="<?= $u->legacy_user_id!==null?(int)$u->legacy_user_id:'' ?>" data-legacy-nombre="<?= html_escape($u->legacy_nombre) ?>" data-legacy-tipo="<?= html_escape((string)$u->legacy_tipo) ?>" data-activo="<?= $u->is_active?'1':'0' ?>" data-registros="<?= (int)$u->registros ?>"
                 data-almacen-tooltip title="Editar usuario" aria-label="Editar a <?= html_escape($u->fullname) ?>" aria-haspopup="dialog"><i class="mdi mdi-pencil" aria-hidden="true"></i></button>
         </div><?php else: ?><span class="text-muted" aria-hidden="true">—</span><span class="sr-only">No editable</span><?php endif; ?></td>
     </tr>
@@ -59,9 +59,10 @@ $url = function($v) { return site_url('usuarios_app').'?vista='.urlencode($v); }
             </div>
             <div class="form-group"><label for="uf-legacy">Usuario de la plataforma <span class="text-muted" data-uf="opcional"></span></label><select class="form-control" id="uf-legacy" name="legacy_id"></select><div class="invalid-feedback" data-uf-error="legacy_id"></div><small class="form-text text-muted" data-uf="ayuda-legacy"></small></div>
             <div class="form-group form-check" data-uf="fila-activo" hidden><input type="checkbox" class="form-check-input" id="uf-activo" name="activo" value="1"><label class="form-check-label" for="uf-activo">Usuario activo (puede iniciar sesión en la app)</label></div>
-            <p class="small text-muted mb-0" data-uf="aviso-clave">Al crearlo se generará una contraseña segura y se mostrará una sola vez, para que se la entregue al usuario.</p>
+            <p class="small mb-2" role="status" aria-live="polite" data-uf="aviso-eliminar" hidden></p>
+            <div class="form-group mb-1"><label for="uf-clave" data-uf="etiqueta-clave">Contraseña</label><input class="form-control" id="uf-clave" name="clave" type="text" maxlength="72" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="invalid-feedback" data-uf-error="clave"></div><small class="form-text text-muted" data-uf="ayuda-clave"></small></div>
         </div>
-        <div class="modal-footer"><button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary" data-uf="guardar">Guardar</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-outline-danger mr-auto" data-uf="eliminar" hidden>Eliminar usuario</button><button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary" data-uf="guardar">Guardar</button></div>
     </form></div>
 </div>
 
@@ -81,8 +82,8 @@ $url = function($v) { return site_url('usuarios_app').'?vista='.urlencode($v); }
 <?php $this->load->view('almacen/datatables'); ?>
 <script>
 jQuery(function($) {
-    var datos={areas:<?= json_encode($areas, JSON_UNESCAPED_UNICODE) ?>, candidatos:<?= json_encode($candidatos, JSON_UNESCAPED_UNICODE) ?>, url:<?= json_encode(site_url('usuarios_app/guardar')) ?>, aplicativo:'OPE'};
-    var modal=$('#usuario-app-form'), form=modal.find('form')[0], clave=$('#usuario-app-clave'), enviando=false;
+    var datos={areas:<?= json_encode($areas, JSON_UNESCAPED_UNICODE) ?>, candidatos:<?= json_encode($candidatos, JSON_UNESCAPED_UNICODE) ?>, url:<?= json_encode(site_url('usuarios_app/guardar')) ?>, urlEliminar:<?= json_encode(site_url('usuarios_app/eliminar')) ?>, aplicativo:'OPE'};
+    var modal=$('#usuario-app-form'), form=modal.find('form')[0], clave=$('#usuario-app-clave'), enviando=false, confirmando=false;
     function el(n) { return form.querySelector('[data-uf="'+n+'"]'); }
     function opcion(valor, texto, extra) { var o=document.createElement('option'); o.value=valor; o.textContent=texto; if(extra) o.dataset.email=extra; return o; }
     function limpiarErrores() {
@@ -121,13 +122,38 @@ jQuery(function($) {
         $('#usuario-app-titulo').text(nuevo?'Nuevo usuario':'Editar usuario');
         form.nombre.value=nuevo?'':d.nombre; form.email.value=nuevo?'':d.email;
         form.nombre.readOnly=!nuevo; form.email.readOnly=!nuevo; form.rol.disabled=!nuevo; form.rol.value=nuevo?'SUPERVISOR':d.rol;
-        el('fila-activo').hidden=nuevo; form.activo.checked=!nuevo && d.activo==='1'; el('aviso-clave').hidden=!nuevo;
+        el('fila-activo').hidden=nuevo; form.activo.checked=!nuevo && d.activo==='1'; form.clave.value='';
+        var registros=nuevo?0:Number(d.registros||0), aviso=el('aviso-eliminar'), borrar=el('eliminar');
+        confirmando=false; borrar.textContent='Eliminar usuario'; borrar.disabled=false; borrar.hidden=nuevo||registros>0;
+        aviso.hidden=nuevo||registros===0; aviso.className='small mb-2 text-muted';
+        aviso.textContent=registros>0?'No se puede eliminar: tiene '+registros+' registro'+(registros===1?'':'s')+' en la app (tareas, descargos, evidencias o asistencias). Si ya no debe entrar, desmarque «Usuario activo».':'';
+        el('etiqueta-clave').textContent=nuevo?'Contraseña':'Nueva contraseña';
+        el('ayuda-clave').textContent=nuevo?'Escríbala (mínimo 4 caracteres) o déjela vacía para que el sistema genere una segura y se la muestre una sola vez.':'Déjela vacía para mantener la actual. Si escribe una nueva, se cerrará la sesión que el usuario tenga abierta en la app.';
         pintarAreas(form.rol.value, nuevo?'':d.areaId);
         pintarCandidatos(form.rol.value, nuevo||!d.legacyId?null:{id:d.legacyId, nombre:d.legacyNombre||('Usuario #'+d.legacyId), tipo:d.legacyTipo});
         modal.modal('show');
     }
     $(document).on('click','[data-usuario-nuevo]', function() { abrir('nuevo'); });
     $(document).on('click','[data-usuario-editar]', function() { abrir('editar', this.dataset); });
+    el('eliminar').addEventListener('click', function() {
+        var boton=this, aviso=el('aviso-eliminar');
+        if(!confirmando) {
+            confirmando=true; boton.textContent='Sí, eliminar definitivamente';
+            aviso.className='small mb-2 text-danger'; aviso.textContent='Se borrará esta cuenta y su sesión en la app. Esta acción no se puede deshacer.'; aviso.hidden=false;
+            return;
+        }
+        if(enviando) return; enviando=true; boton.disabled=true; boton.textContent='Eliminando…'; limpiarErrores();
+        var datosForm=new FormData(); datosForm.append('token', form.token.value); datosForm.append('id', form.id.value);
+        fetch(datos.urlEliminar, {method:'POST', body:datosForm, credentials:'same-origin', headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(function(r) { return r.json().catch(function() { return {error:'Respuesta inesperada del servidor. Actualice la página.'}; }).then(function(d) { return {estado:r.status, d:d}; }); })
+            .then(function(res) {
+                if(res.estado===200 && res.d.ok) { modal.modal('hide'); location.reload(); return; }
+                el('error').textContent=res.d.error||'No se pudo eliminar el usuario.'; el('error').hidden=false;
+                confirmando=false; boton.disabled=false; boton.textContent='Eliminar usuario'; aviso.hidden=true;
+            })
+            .catch(function() { el('error').textContent='No se pudo conectar. Intente nuevamente.'; el('error').hidden=false; confirmando=false; boton.disabled=false; boton.textContent='Eliminar usuario'; })
+            .then(function() { enviando=false; });
+    });
     form.rol.addEventListener('change', function() { pintarAreas(form.rol.value, ''); pintarCandidatos(form.rol.value, null); sugerir(); });
     form.email.addEventListener('input', sugerir);
     modal.on('shown.bs.modal', function() { (form.nombre.readOnly ? form.legacy_id : form.nombre).focus(); });
@@ -141,7 +167,7 @@ jQuery(function($) {
                 var d=res.d;
                 if(res.estado===201 || (res.estado===200 && d.ok)) {
                     modal.modal('hide');
-                    if(res.estado===201) { clave.find('[data-uc="email"]').text(d.email); clave.find('[data-uc="clave"]').text(d.clave); clave.find('[data-uc="copiado"]').text(''); clave.modal('show'); }
+                    if(d.clave) { clave.find('#usuario-app-clave-titulo').text(res.estado===201?'Usuario creado':'Contraseña restablecida'); clave.find('[data-uc="email"]').text(d.email); clave.find('[data-uc="clave"]').text(d.clave); clave.find('[data-uc="copiado"]').text(''); clave.modal('show'); }
                     else location.reload();
                     return;
                 }

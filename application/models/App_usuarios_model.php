@@ -12,6 +12,13 @@ class App_usuarios_model extends CI_Model
     const AREA_SUPERVISOR = 'OPE';
     const VISTAS = array('todos' => 'Todos', 'activos' => 'Activos', 'inactivos' => 'Inactivos', 'alertas' => 'Con alertas');
     const BCRYPT_COSTO = 10;
+    // Registros que el usuario dejó en la app. Las tablas del API los referencian sin borrado en cascada, así que un
+    // usuario con alguno no se puede eliminar (y no debe: se perdería quién hizo cada tarea, descargo o asistencia).
+    const SQL_REGISTROS = "(SELECT COUNT(*) FROM app_tickets t WHERE t.supervisor_id = u.id)
+        + (SELECT COUNT(*) FROM app_discharges d WHERE d.area_user_id = u.id)
+        + (SELECT COUNT(*) FROM app_evidences e WHERE e.user_id = u.id)
+        + (SELECT COUNT(*) FROM app_reassignment_history h WHERE h.user_id = u.id)
+        + (SELECT COUNT(*) FROM app_attendances a WHERE a.supervisor_id = u.id)";
 
     public function __construct() { parent::__construct(); $this->load->database(); }
 
@@ -38,7 +45,8 @@ class App_usuarios_model extends CI_Model
         $sql = "SELECT u.id, u.fullname, u.email, r.name AS rol, u.area_id, a.code AS area_codigo, a.spanish_name AS area, u.is_active, u.created_at,
                        u.legacy_user_id, TRIM(CONCAT(COALESCE(l.nombre_usu,''), ' ', COALESCE(l.apellido_pat,''))) AS legacy_nombre, l.tipo_usu AS legacy_tipo, l.estado_usu AS legacy_estado,
                        (SELECT MAX(s.last_used_at) FROM app_refresh_sessions s WHERE s.user_id = u.id) AS ultima,
-                       (SELECT COUNT(*) FROM app_refresh_sessions s WHERE s.user_id = u.id AND s.status = 'ACTIVE' AND s.fcm_token IS NOT NULL AND s.fcm_token <> '') AS con_push
+                       (SELECT COUNT(*) FROM app_refresh_sessions s WHERE s.user_id = u.id AND s.status = 'ACTIVE' AND s.fcm_token IS NOT NULL AND s.fcm_token <> '') AS con_push,
+                       " . self::SQL_REGISTROS . " AS registros
                   FROM app_users u
                   JOIN app_roles r ON r.id = u.role_id
                   LEFT JOIN app_areas a ON a.id = u.area_id
@@ -48,6 +56,7 @@ class App_usuarios_model extends CI_Model
         foreach ($usuarios as $u) {
             $u->is_active = (int) $u->is_active === 1;
             $u->con_push = (int) $u->con_push > 0;
+            $u->registros = (int) $u->registros;
             $u->legacy_nombre = trim((string) $u->legacy_nombre);
             $u->alertas = $this->alertas($u);
         }
@@ -72,7 +81,7 @@ class App_usuarios_model extends CI_Model
 
     public function obtener($id)
     {
-        return $this->db->query("SELECT u.id, u.is_active, u.area_id, u.legacy_user_id, r.name AS rol FROM app_users u JOIN app_roles r ON r.id = u.role_id WHERE u.id = ?", array((int) $id))->row();
+        return $this->db->query("SELECT u.id, u.email, u.is_active, u.area_id, u.legacy_user_id, r.name AS rol FROM app_users u JOIN app_roles r ON r.id = u.role_id WHERE u.id = ?", array((int) $id))->row();
     }
 
     // Usuarios de la plataforma que se pueden vincular: activos y no vinculados a otro usuario del app.
@@ -126,11 +135,39 @@ class App_usuarios_model extends CI_Model
         return $ok ? array('id' => (int) $this->db->insert_id()) : array('error' => $this->error_clave());
     }
 
-    public function actualizar($id, $d)
+    // $hash opcional: restablece la contraseña. En ese caso se cierran las sesiones abiertas del usuario en la app,
+    // igual que hace el API al revocar una sesión (status REVOKED + revoked_at; el trigger de la tabla actualiza active_user_id).
+    // Cambiar solo la contraseña no cierra sesiones: el API compara el hash únicamente al iniciar sesión.
+    public function actualizar($id, $d, $hash = null)
     {
-        $ok = $this->db->query("UPDATE app_users SET is_active = ?, area_id = ?, legacy_user_id = ?, updated_at = UTC_TIMESTAMP(3) WHERE id = ?",
-            array($d['activo'] ? 1 : 0, $d['area_id'], $d['legacy_id'], (int) $id));
-        return $ok ? array('id' => (int) $id) : array('error' => $this->error_clave());
+        $sql = "UPDATE app_users SET is_active = ?, area_id = ?, legacy_user_id = ?, " . ($hash !== null ? "password_hash = ?, " : "") . "updated_at = UTC_TIMESTAMP(3) WHERE id = ?";
+        $binds = array($d['activo'] ? 1 : 0, $d['area_id'], $d['legacy_id']);
+        if ($hash !== null) $binds[] = $hash;
+        $binds[] = (int) $id;
+        $this->db->trans_start();
+        $ok = $this->db->query($sql, $binds);
+        if ($ok && $hash !== null) {
+            $ok = $this->db->query("UPDATE app_refresh_sessions SET status = 'REVOKED', revoked_at = UTC_TIMESTAMP(3) WHERE user_id = ? AND status = 'ACTIVE'", array((int) $id));
+        }
+        $error = $ok ? null : $this->error_clave();
+        $this->db->trans_complete();
+        return $ok && $this->db->trans_status() !== false ? array('id' => (int) $id) : array('error' => $error ?: 'bd');
+    }
+
+    // Elimina un supervisor o usuario de área sin registros en la app; sus sesiones se borran en cascada.
+    // Devuelve 'ok', 'no_existe', 'en_uso' o 'bd'.
+    public function eliminar($id)
+    {
+        $this->db->trans_start();
+        $u = $this->db->query("SELECT u.id, " . self::SQL_REGISTROS . " AS registros FROM app_users u JOIN app_roles r ON r.id = u.role_id
+                                WHERE u.id = ? AND r.name IN ('SUPERVISOR', 'AREA_USER') FOR UPDATE", array((int) $id))->row();
+        if (!$u) { $this->db->trans_complete(); return 'no_existe'; }
+        if ((int) $u->registros > 0) { $this->db->trans_complete(); return 'en_uso'; }
+        $ok = $this->db->query("DELETE FROM app_users WHERE id = ?", array((int) $id));
+        $error = $ok ? null : ((int) $this->db->error()['code'] === 1451 ? 'en_uso' : 'bd');
+        $this->db->trans_complete();
+        if ($error) return $error;
+        return $this->db->trans_status() === false ? 'bd' : 'ok';
     }
 
     private function error_clave()

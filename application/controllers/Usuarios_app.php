@@ -71,6 +71,11 @@ class Usuarios_app extends CI_Controller
             elseif ($m->correo_existe($email)) $errores['email'] = 'Ya existe un usuario del app con este correo.';
         }
 
+        // Contraseña escrita por el administrador (opcional). No se recortan espacios: forman parte de la clave.
+        $clave_escrita = $this->input->post('clave');
+        $clave_escrita = is_string($clave_escrita) ? $clave_escrita : '';
+        if ($clave_escrita !== '' && (mb_strlen($clave_escrita) < 4 || strlen($clave_escrita) > 72)) $errores['clave'] = 'La contraseña debe tener al menos 4 caracteres (y como máximo 72).';
+
         // Área: el supervisor siempre va en OPE; el usuario de área, en cualquier otra área activa.
         $area_id = null;
         if (isset($rol) && in_array($rol, App_usuarios_model::CREABLES, true)) {
@@ -92,18 +97,38 @@ class Usuarios_app extends CI_Controller
         if ($errores) { $json(array('errores' => $errores), 422); return; }
 
         if ($id > 0) {
-            $r = $m->actualizar($id, array('activo' => $texto('activo') === '1', 'area_id' => $area_id, 'legacy_id' => $legacy_id));
+            $r = $m->actualizar($id, array('activo' => $texto('activo') === '1', 'area_id' => $area_id, 'legacy_id' => $legacy_id), $clave_escrita !== '' ? App_usuarios_model::hash_clave($clave_escrita) : null);
             if (isset($r['error'])) { $json(array('errores' => $r['error'] === 'vinculo' ? array('legacy_id' => 'Ese usuario de la plataforma ya está vinculado a otro usuario del app.') : array(), 'error' => 'No se pudo guardar el usuario.'), $r['error'] === 'vinculo' ? 422 : 500); return; }
             $json(array('ok' => true, 'id' => $id));
             return;
         }
-        $clave = App_usuarios_model::generar_clave();
+        $generada = $clave_escrita === '';
+        $clave = $generada ? App_usuarios_model::generar_clave() : $clave_escrita;
         $r = $m->crear(array('rol' => $rol, 'area_id' => $area_id, 'legacy_id' => $legacy_id, 'nombre' => $nombre, 'email' => $email, 'hash' => App_usuarios_model::hash_clave($clave)));
         if (isset($r['error'])) {
             $errores = $r['error'] === 'correo' ? array('email' => 'Ya existe un usuario del app con este correo.') : ($r['error'] === 'vinculo' ? array('legacy_id' => 'Ese usuario de la plataforma ya está vinculado a otro usuario del app.') : array());
             $json(array('errores' => $errores, 'error' => $errores ? null : 'No se pudo crear el usuario.'), $errores ? 422 : 500);
             return;
         }
-        $json(array('ok' => true, 'id' => $r['id'], 'email' => $email, 'clave' => $clave), 201);
+        $json($generada ? array('ok' => true, 'id' => $r['id'], 'email' => $email, 'clave' => $clave) : array('ok' => true, 'id' => $r['id']), 201);
+    }
+
+    // Elimina un usuario del app que no tenga registros. Si los tiene, se responde 409 y se sugiere desactivarlo.
+    public function eliminar()
+    {
+        $json = function ($datos, $codigo = 200) {
+            $this->output->set_status_header($codigo)->set_content_type('application/json', 'utf-8')
+                ->set_header('Cache-Control: no-store')->set_output(json_encode($datos, JSON_UNESCAPED_UNICODE));
+        };
+        if ($this->input->method() !== 'post') { $json(array('error' => 'Método no permitido.'), 405); return; }
+        $token = $this->input->post('token');
+        if (!is_string($token) || !hash_equals((string) $this->session->userdata('usuarios_app_token'), $token)) { $json(array('error' => 'La sesión del formulario venció. Actualice la página.'), 403); return; }
+        $id = $this->input->post('id');
+        if (!is_string($id) || !ctype_digit($id) || (int) $id === 0) { $json(array('error' => 'Usuario inválido.'), 400); return; }
+        $r = $this->App_usuarios_model->eliminar((int) $id);
+        if ($r === 'ok') { $json(array('ok' => true)); return; }
+        if ($r === 'no_existe') { $json(array('error' => 'El usuario no existe o no se puede eliminar aquí.'), 404); return; }
+        if ($r === 'en_uso') { $json(array('error' => 'Este usuario ya tiene registros en la app (tareas, descargos, evidencias o asistencias). Eliminarlo borraría quién los hizo: desactívelo en su lugar.'), 409); return; }
+        $json(array('error' => 'No se pudo eliminar el usuario.'), 500);
     }
 }
