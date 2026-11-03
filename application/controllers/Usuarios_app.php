@@ -92,9 +92,11 @@ class Usuarios_app extends CI_Controller
         if ($errores) { $json(array('errores' => $errores), 422); return; }
 
         if ($id > 0) {
-            $r = $m->actualizar($id, array('activo' => $texto('activo') === '1', 'area_id' => $area_id, 'legacy_id' => $legacy_id));
+            $nueva = $texto('nueva_clave') === '1';
+            $clave = $nueva ? App_usuarios_model::generar_clave() : null;
+            $r = $m->actualizar($id, array('activo' => $texto('activo') === '1', 'area_id' => $area_id, 'legacy_id' => $legacy_id), $nueva ? App_usuarios_model::hash_clave($clave) : null);
             if (isset($r['error'])) { $json(array('errores' => $r['error'] === 'vinculo' ? array('legacy_id' => 'Ese usuario de la plataforma ya está vinculado a otro usuario del app.') : array(), 'error' => 'No se pudo guardar el usuario.'), $r['error'] === 'vinculo' ? 422 : 500); return; }
-            $json(array('ok' => true, 'id' => $id));
+            $json($nueva ? array('ok' => true, 'id' => $id, 'email' => $actual->email, 'clave' => $clave) : array('ok' => true, 'id' => $id));
             return;
         }
         $clave = App_usuarios_model::generar_clave();

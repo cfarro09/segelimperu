@@ -72,7 +72,7 @@ class App_usuarios_model extends CI_Model
 
     public function obtener($id)
     {
-        return $this->db->query("SELECT u.id, u.is_active, u.area_id, u.legacy_user_id, r.name AS rol FROM app_users u JOIN app_roles r ON r.id = u.role_id WHERE u.id = ?", array((int) $id))->row();
+        return $this->db->query("SELECT u.id, u.email, u.is_active, u.area_id, u.legacy_user_id, r.name AS rol FROM app_users u JOIN app_roles r ON r.id = u.role_id WHERE u.id = ?", array((int) $id))->row();
     }
 
     // Usuarios de la plataforma que se pueden vincular: activos y no vinculados a otro usuario del app.
@@ -126,11 +126,23 @@ class App_usuarios_model extends CI_Model
         return $ok ? array('id' => (int) $this->db->insert_id()) : array('error' => $this->error_clave());
     }
 
-    public function actualizar($id, $d)
+    // $hash opcional: restablece la contraseña. En ese caso se cierran las sesiones abiertas del usuario en la app,
+    // igual que hace el API al revocar una sesión (status REVOKED + revoked_at; el trigger de la tabla actualiza active_user_id).
+    // Cambiar solo la contraseña no cierra sesiones: el API compara el hash únicamente al iniciar sesión.
+    public function actualizar($id, $d, $hash = null)
     {
-        $ok = $this->db->query("UPDATE app_users SET is_active = ?, area_id = ?, legacy_user_id = ?, updated_at = UTC_TIMESTAMP(3) WHERE id = ?",
-            array($d['activo'] ? 1 : 0, $d['area_id'], $d['legacy_id'], (int) $id));
-        return $ok ? array('id' => (int) $id) : array('error' => $this->error_clave());
+        $sql = "UPDATE app_users SET is_active = ?, area_id = ?, legacy_user_id = ?, " . ($hash !== null ? "password_hash = ?, " : "") . "updated_at = UTC_TIMESTAMP(3) WHERE id = ?";
+        $binds = array($d['activo'] ? 1 : 0, $d['area_id'], $d['legacy_id']);
+        if ($hash !== null) $binds[] = $hash;
+        $binds[] = (int) $id;
+        $this->db->trans_start();
+        $ok = $this->db->query($sql, $binds);
+        if ($ok && $hash !== null) {
+            $ok = $this->db->query("UPDATE app_refresh_sessions SET status = 'REVOKED', revoked_at = UTC_TIMESTAMP(3) WHERE user_id = ? AND status = 'ACTIVE'", array((int) $id));
+        }
+        $error = $ok ? null : $this->error_clave();
+        $this->db->trans_complete();
+        return $ok && $this->db->trans_status() !== false ? array('id' => (int) $id) : array('error' => $error ?: 'bd');
     }
 
     private function error_clave()

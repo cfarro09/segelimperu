@@ -59,6 +59,7 @@ $url = function($v) { return site_url('usuarios_app').'?vista='.urlencode($v); }
             </div>
             <div class="form-group"><label for="uf-legacy">Usuario de la plataforma <span class="text-muted" data-uf="opcional"></span></label><select class="form-control" id="uf-legacy" name="legacy_id"></select><div class="invalid-feedback" data-uf-error="legacy_id"></div><small class="form-text text-muted" data-uf="ayuda-legacy"></small></div>
             <div class="form-group form-check" data-uf="fila-activo" hidden><input type="checkbox" class="form-check-input" id="uf-activo" name="activo" value="1"><label class="form-check-label" for="uf-activo">Usuario activo (puede iniciar sesión en la app)</label></div>
+            <div class="form-group form-check mb-1" data-uf="fila-clave" hidden><input type="checkbox" class="form-check-input" id="uf-nueva-clave" name="nueva_clave" value="1"><label class="form-check-label" for="uf-nueva-clave">Generar una contraseña nueva</label><small class="form-text text-muted">Se mostrará una sola vez y se cerrará la sesión que el usuario tenga abierta en la app.</small></div>
             <p class="small text-muted mb-0" data-uf="aviso-clave">Al crearlo se generará una contraseña segura y se mostrará una sola vez, para que se la entregue al usuario.</p>
         </div>
         <div class="modal-footer"><button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary" data-uf="guardar">Guardar</button></div>
@@ -121,7 +122,7 @@ jQuery(function($) {
         $('#usuario-app-titulo').text(nuevo?'Nuevo usuario':'Editar usuario');
         form.nombre.value=nuevo?'':d.nombre; form.email.value=nuevo?'':d.email;
         form.nombre.readOnly=!nuevo; form.email.readOnly=!nuevo; form.rol.disabled=!nuevo; form.rol.value=nuevo?'SUPERVISOR':d.rol;
-        el('fila-activo').hidden=nuevo; form.activo.checked=!nuevo && d.activo==='1'; el('aviso-clave').hidden=!nuevo;
+        el('fila-activo').hidden=nuevo; form.activo.checked=!nuevo && d.activo==='1'; el('aviso-clave').hidden=!nuevo; el('fila-clave').hidden=nuevo; form.nueva_clave.checked=false;
         pintarAreas(form.rol.value, nuevo?'':d.areaId);
         pintarCandidatos(form.rol.value, nuevo||!d.legacyId?null:{id:d.legacyId, nombre:d.legacyNombre||('Usuario #'+d.legacyId), tipo:d.legacyTipo});
         modal.modal('show');
@@ -141,7 +142,7 @@ jQuery(function($) {
                 var d=res.d;
                 if(res.estado===201 || (res.estado===200 && d.ok)) {
                     modal.modal('hide');
-                    if(res.estado===201) { clave.find('[data-uc="email"]').text(d.email); clave.find('[data-uc="clave"]').text(d.clave); clave.find('[data-uc="copiado"]').text(''); clave.modal('show'); }
+                    if(d.clave) { clave.find('#usuario-app-clave-titulo').text(res.estado===201?'Usuario creado':'Contraseña restablecida'); clave.find('[data-uc="email"]').text(d.email); clave.find('[data-uc="clave"]').text(d.clave); clave.find('[data-uc="copiado"]').text(''); clave.modal('show'); }
                     else location.reload();
                     return;
                 }
