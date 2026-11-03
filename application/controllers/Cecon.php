@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-// CECON: tareas registradas por los supervisores y su descargo (solo lectura).
+// CECON: tareas registradas por los supervisores y su descargo. La única acción que escribe es aprobar un descargo.
 class Cecon extends CI_Controller
 {
     public function __construct()
@@ -15,6 +15,7 @@ class Cecon extends CI_Controller
         $this->load->model('Cecon_model');
         $this->load->model('General_model');
         $this->db->db_debug = false;
+        if (!$this->session->userdata('cecon_token')) $this->session->set_userdata('cecon_token', bin2hex(random_bytes(32)));
     }
 
     public function index()
@@ -27,7 +28,27 @@ class Cecon extends CI_Controller
             'tareas'      => $this->Cecon_model->listar($vista),
             'conteos'     => $this->Cecon_model->conteos(),
             'vista'       => $vista,
+            'token'       => $this->session->userdata('cecon_token'),
         ));
+    }
+
+    // Aprueba el descargo de una tarea (DISCHARGED -> COMPLETED). Responde JSON.
+    public function aprobar()
+    {
+        $json = function ($datos, $codigo = 200) {
+            $this->output->set_status_header($codigo)->set_content_type('application/json', 'utf-8')
+                ->set_header('Cache-Control: no-store')->set_output(json_encode($datos, JSON_UNESCAPED_UNICODE));
+        };
+        if ($this->input->method() !== 'post') { $json(array('error' => 'Método no permitido.'), 405); return; }
+        $token = $this->input->post('token');
+        if (!is_string($token) || !hash_equals((string) $this->session->userdata('cecon_token'), $token)) { $json(array('error' => 'La sesión venció. Actualice la página.'), 403); return; }
+        $id = $this->input->post('id');
+        if (!is_string($id) || !ctype_digit($id) || (int) $id === 0) { $json(array('error' => 'Tarea inválida.'), 400); return; }
+        $r = $this->Cecon_model->aprobar((int) $id);
+        if ($r === 'ok') { $json(array('ok' => true)); return; }
+        if ($r === 'no_existe') { $json(array('error' => 'La tarea no existe.'), 404); return; }
+        if ($r === 'estado') { $json(array('error' => 'Esta tarea ya no está pendiente de aprobación (puede que otra persona la haya aprobado). Actualice la página.'), 409); return; }
+        $json(array('error' => 'No se pudo aprobar la tarea.'), 500);
     }
 
     // Monitor de asistencia: qué clientes y supervisores registraron la asistencia del día y cuáles faltan.
