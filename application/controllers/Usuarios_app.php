@@ -112,4 +112,23 @@ class Usuarios_app extends CI_Controller
         }
         $json($generada ? array('ok' => true, 'id' => $r['id'], 'email' => $email, 'clave' => $clave) : array('ok' => true, 'id' => $r['id']), 201);
     }
+
+    // Elimina un usuario del app que no tenga registros. Si los tiene, se responde 409 y se sugiere desactivarlo.
+    public function eliminar()
+    {
+        $json = function ($datos, $codigo = 200) {
+            $this->output->set_status_header($codigo)->set_content_type('application/json', 'utf-8')
+                ->set_header('Cache-Control: no-store')->set_output(json_encode($datos, JSON_UNESCAPED_UNICODE));
+        };
+        if ($this->input->method() !== 'post') { $json(array('error' => 'Método no permitido.'), 405); return; }
+        $token = $this->input->post('token');
+        if (!is_string($token) || !hash_equals((string) $this->session->userdata('usuarios_app_token'), $token)) { $json(array('error' => 'La sesión del formulario venció. Actualice la página.'), 403); return; }
+        $id = $this->input->post('id');
+        if (!is_string($id) || !ctype_digit($id) || (int) $id === 0) { $json(array('error' => 'Usuario inválido.'), 400); return; }
+        $r = $this->App_usuarios_model->eliminar((int) $id);
+        if ($r === 'ok') { $json(array('ok' => true)); return; }
+        if ($r === 'no_existe') { $json(array('error' => 'El usuario no existe o no se puede eliminar aquí.'), 404); return; }
+        if ($r === 'en_uso') { $json(array('error' => 'Este usuario ya tiene registros en la app (tareas, descargos, evidencias o asistencias). Eliminarlo borraría quién los hizo: desactívelo en su lugar.'), 409); return; }
+        $json(array('error' => 'No se pudo eliminar el usuario.'), 500);
+    }
 }
